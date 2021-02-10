@@ -1,8 +1,8 @@
 % CS 340: Programming Paradigms and Patterns
-% Lect 05 - Lists
+% Lect 04 - Lists
 % Michael Lee
 
-> module Lect.Lect05Complete where
+> module Lect.Lect04Complete where
 > import Data.Char
 
 Lists

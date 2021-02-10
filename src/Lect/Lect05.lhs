@@ -1,341 +1,332 @@
 % CS 340: Programming Paradigms and Patterns
-% Lect 05 - Lists
+% Lect 05 - Testing
 % Michael Lee
 
 > module Lect.Lect05 where
-> import Data.Char
+> import Control.Exception
+> import Test.HUnit
+> import Test.HUnit.Approx
+> import Test.Hspec
+> import Test.QuickCheck
 
-Lists
-=====
+Testing
+=======
 
 Agenda:
-  - The List type
-  - Constructing lists
-  - Syntactic sugar
-  - List comprehensions
-  - Common list functions
-  - List processing functions
-    - Pattern matching
-    - Structural recursion
+  - What is testing and why do we do it?
+  - Approaches to testing
+  - Hspec testing framework
+  - Unit tests with Hspec/HUnit
+  - Property-based testing with QuickCheck
+  - Test coverage
 
 
-The List type
--------------
+What is testing and why do we do it?
+------------------------------------
 
-Haskell's built-in list type might be defined something like this:
+A *test* determines if some aspect of a system works according to a given
+specification. We test our code to help ensure correctness!
 
-    [a] = [] | a : [a]
+Testing tools can also help us:
 
-Read as: A list containing instances of type 'a' ([a]) is either an empty
-         list ([]) or an instance of type 'a' followed by ':' and a list
-         containing instances of type 'a' ([a]).
+  - locate and fix bugs
 
-Takeaways: 
-  - a list is defined recursively, i.e., in terms of itself
-  - the list type is polymorphic
-  - lists are homogeneous (all elements of a given list are of the same type)
+  - verify logical invariants
+
+  - ensure that APIs are consistent
+
+  - determine code coverage
+
+  - eliminate code "lint"
 
 
-Constructing lists
-------------------
+Approaches to testing
+---------------------
 
-`[]` and `:` are examples of value constructors (aka data constructors); i.e.,
-they are functions that return values of the associated type (in this case, the
-polymorphic list type).
+Most modern software development models emphasize early and continuous testing
+to ensure software quality. 
 
-`[]` is called "empty list" and the `:` operator is called "cons":
+Test-Driven Development (TDD) asks developers to write tests *first*, ensure
+that they fail (why?), and only then write code to get the tests to pass. After
+all tests pass, any future code refactoring --- i.e., restructuring to improve
+modularity, speed, efficiency, legibility, etc. --- require re-running tests.
 
-    [] :: [a]
+Tests can be specified and designed in many different ways:
 
-    (:) :: a -> [a] -> [a]
+  - Haskell's type system supports static testing and verification. The
+    compiler uses type inference and explicit type declarations to ensure no
+    type-related errors will occur at runtime. (But the type system doesn't
+    guard against logical errors!)
 
-We can call `:` in prefix form to build lists:
+  - *Unit tests* verify that parts of a program (e.g., functions or classes)
+    work as expected, by manually specifying the desired results (e.g., return
+    value or output) for different combinations of input and/or state.
 
-    (:) 1 []
+  - *Property-based tests* verify that parts of a program consistently maintain
+    specified high-level properties, which are tested via multiple automatically
+    generated inputs.
 
-    (:) 1 ((:) 2 [])
+  - Test frameworks simplify and automate the specification, discovery, and
+    execution of tests. They can also help determine code coverage --- i.e.,
+    how much of the codebase is actually being tested.
 
-    (:) 1 ((:) 2 ((:) 3 []))
 
-But we usually prefer to use `:` in infix form:
+Hspec testing framework
+-----------------------
 
-    1 : (2 : (3 : []))
+Hspec gives us a way to specify tests in a human-legible way:
 
-And `:`  is right-associative, so we can just write:
+> someSpec :: Spec
+> someSpec = 
+>   describe "someFunc" $ do
+>     it "fulfills some expectation ..." $
+>       pendingWith "Need to flesh out this test"
+>     it "fulfills some other expectation ..." $
+>       pending
 
-    1 : 2 : 3 : []
 
-E.g., lists of integers:
+  - You can run a `Spec` using `hspec`.
 
-    []
+  - Hspec supports both unit tests and property-based tests
 
-    100 : []
+  - `stack test` will automatically run "test/Spec.hs", which will discover
+    all "*Spec.hs" files in the "test" directory and run their "spec" functions.
 
-    20 : -3 : 8 : -15 : []
+  - You can test a specific module with: `stack test --test-arguments "-m MP.MP1"`
 
-E.,g., lists of Chars (aka strings):
+  - We typically put all test code in the "test" directory --- all `Spec`s
+    defined in this file are in "Lect04Spec.hs"
 
-    []
 
-    'a' : []
+Unit tests with Hspec/HUnit
+---------------------------
 
-    'h' : 'e' : 'l' : 'l' : 'o' : []
+HUnit is a unit testing library that gives us the `Assertion` type, which can be
+executed to determine if associated tests pass or fail. Assertions include
+`assertBool`, `assertEqual`, `assertApproxEqual`. E.g.,
+
+> tests1 = TestList [
+>            TestCase $ assertBool "even 8" (even 8),
+>            TestCase $ assertEqual "2**10" 1024 (2**10),
+>            TestCase $ assertApproxEqual "sqrt 2" 0.001 1.414 (sqrt 2)
+>          ]
+>
+> tests2 = TestList [ -- broken tests!
+>            TestCase $ assertBool "even 7" (even 7),
+>            TestCase $ assertEqual "2**12" 1024 (2**12),
+>            TestCase $ assertApproxEqual "sqrt 2" 0.0001 1.414 (sqrt 2)
+>          ]
+
+We can run HUnit tests with `runTestTT`.
 
 ---
 
-Functions that construct lists typically:
+Hspec automatically creates test cases for us when we use the "describe"/"it"
+syntax to create `Spec`s. E.g., to test `nand`:
 
-  - operate recursively
-
-  - use one of the list value constructors (`[]` or `:`) in each recursive call
-
-  - when using `:`, add one element to the front of the list and use recursion
-    to construct the rest of the list
-
-  - use `[]` in the base (non-recursive) case, if it exists
-
-
-> replicate' :: Int -> a -> [a]
-> replicate' = undefined
+> nand :: Bool -> Bool -> Bool
+> nand True True = False
+> nand _    _    = True
 >
-> enumFromTo' :: (Ord a, Enum a) => a -> a -> [a]
-> enumFromTo' = undefined
 >
-> -- and now for some infinite lists
+> nandSpec :: Spec
+> nandSpec = 
+>   describe "nand" $ do
+>     it "works correctly" $ do
+>       assertEqual "nand True True"   False (nand True True)
+>       assertEqual "nand True False"  True  (nand True False)
+>       assertEqual "nand False True"  True  (nand False True)
+>       assertEqual "nand False False" True  (nand False False)
+
+---
+
+We can also use Hspec functions `shouldBe`, `shouldSatisfy`, and `shouldThrow`
+instead of HUnit assertions to describe test expectations. E.g., 
+
+    (2**10) `shouldBe` 1024
+
+    8 `shouldSatisfy` even
+
+    someAction `shouldThrow` anyException
+
+
+E.g., to test `c2h` (note that we try to exhaustively test edge cases):
+
+> c2f :: Fractional a => a -> a
+> c2f c = c * 9/5 + 32
 >
-> ones :: [Int]
-> ones = undefined
+> c2h :: (Floating a, Ord a) => a -> String
+> c2h c | f < 0     = "too cold"
+>       | f > 100   = "too hot"
+>       | otherwise = "tolerable"
+>   where f = c2f c
+>
+>
+> c2hSpec :: Spec
+> c2hSpec = 
+>   describe "c2h" $ do
+>     it "works for too-hot temperatures" $ do
+>       c2h 38 `shouldBe` "too hot"
+>       c2h 50 `shouldBe` "too hot"
+>     it "works for too-cold temperatures" $ do
+>       c2h (-18) `shouldBe` "too cold"
+>       c2h (-30) `shouldBe` "too cold"
+>     it "works for tolerable temperatures" $ do
+>       c2h 37 `shouldBe` "tolerable"
+>       c2h (-17) `shouldBe` "tolerable"
+>       c2h 25 `shouldBe` "tolerable"
+
+
+Property-based testing with QuickCheck
+--------------------------------------
+
+QuickCheck lets us define a `Property` from a predicate (a function that
+evaluates to a Boolean). The predicate is called automatically for many randomly
+selected inputs (based on the input types) to test that the property holds.
+
+  - properties must be monomorphic (i.e., they can't have type variables), as
+    QuickCheck needs concrete types to create random values
+
+  - the generation of random test cases can be customized to reflect likely or
+    relevant inputs
+
+  - if QuickCheck can falsify a property (i.e., prove that it doesn't hold for
+    an input), it attempts to "shrink" the test cases to give us a minimal 
+    counterexample
+
+  - takes the chore out of writing individual test cases, and our property
+    specifications serve as useful high-level documentation!
+
+
+E.g., some arithmetic properties:
+
+> prop_commAdd :: Integer -> Integer -> Bool
+> prop_commAdd x y = x + y == y + x
+>
+>
+> prop_distMultOverAdd :: Integer -> Integer -> Integer -> Bool
+> prop_distMultOverAdd x y z = x * (y + z) == x * y + x * z
+
+Test predicates by passing them to `quickCheck` or `verboseCheck`.
+
+---
+
+We can also use functions like `collect` and `classify` to help log test
+information. 
+
+> prop_commAdd' :: Integer -> Integer -> Property
+> prop_commAdd' x y = collect (x+y) $ x + y == y + x
+>
+>
+> prop_distMultOverAdd' :: Integer -> Integer -> Integer -> Property
+> prop_distMultOverAdd' x y z = 
+>   classify (x == 0) "zero" $ x * (y + z) == x * y + x * z
+
+---
+
+E.g., define properties for Euclidean distance function `distance`:
+
+> distance :: (Floating a, Eq a) => (a,a) -> (a,a) -> a
+> distance (x1,y1) (x2,y2) = sqrt (dx^2 + dy^2)
+>   where dx = x1-x2
+>         dy = y1-y2
+>
+>
+> prop_alwaysPositive :: (Double,Double) -> (Double,Double) -> Bool
+> prop_alwaysPositive (x1,y1) (x2,y2) = distance (x1,y1) (x2,y2) >= 0
+>
+>
+> -- define an operator for approximate equality
+> infix 4 =~=
+> (=~=) :: (Floating a, Ord a) =>  a -> a -> Bool
+> x =~= y = abs (x - y) < 0.0001
+>
+>
+> prop_commDistance :: (Double,Double) -> (Double,Double) -> Bool
+> prop_commDistance (x1,y1) (x2,y2) = d1 =~= d2
+>   where d1 = distance (x1,y1) (x2,y2)
+>         d2 = distance (x2,y2) (x1,y1)
+>
 > 
-> repeat' :: a -> [a]
-> repeat' = undefined
->
-> enumFrom' :: Enum a => a -> [a]
-> enumFrom' = undefined
-
-Note: to limit the number of values drawn from an infinite list, we can use
-      `take` (we'll implement it later)
-
-
-Syntactic sugar
----------------
-
-Instead of constructing lists with `:`, Haskell gives us syntactic shortcuts:
-
-E.g., for simple itemized lists, [...]
-
-    [1,2,3,4,5,6,7,8,9,10]   ==  1:2:3:4:5:6:7:8:9:10:[] 
-
-    [[1, 2, 3], [4, 5, 6]]   ==  (1:2:3:[]) : (4:5:6:[]) : []
-
-    [(2, True), (1, False)]  ==  (2,True) : (1,False) : []
-
-
-E.g., for lists of characters (string), "...":
-
-    "hello world"       ==  'h':'e':'l':'l':'o':[]
-
-    ["hello", "world"]  ==  ('h':'e':'l':'l':'o':[]) : ('w':'o':'r':'l':'d':[]) : []
-
-
-E.g., for types that are instances of `Enum`, [I..J] and [I,J..K] and [I..]:
-
-    [1..10]     ==  [1,2,3,4,5,6,7,8,9,10]
-
-    ['a'..'z']  ==  "abcdefghijklmnopqrstuvwxyz"
-
-    [2,4..10]   ==  [2,4,6,8,10]
-    
-    [10,9..1]   ==  [10,9,8,7,6,5,4,3,2,1]
-
-
-E.g., for infinite lists of `Enum` types, [I..] and [I,J..]
-
-    [1..]    ==  enumFrom 1
-
-    [3,6..]  ==  enumFromThen 3 6
-
-
-List comprehensions
--------------------
-
-Syntax:
-
-  [ Expression | Generator, ... , Predicate, ... ]
-
-  - which produces a list of values computed by the Expression
-
-  - where each Generator is of the form "var <- List"
-
-  - and each Predicate is a Boolean expression
-
-  - you can also use `let` to create local vars (without `in`)
-
-E.g.,
-
-> evens = [2*x | x <- [1..]]
->
-> evens' = [x | x <- [1..], x `mod` 2 == 0]
-> 
-> sudokuBoxes = [[[r,c] | r <- rs, c <- cs] | rs <- ["ABC", "DEF", "GHI"],
->                                             cs <- ["123", "456", "789"]]
->
-> integerRightTriangles p = [(a,b,c) | a <- [1..p], 
->                                      b <- [a..(p-a)],
->                                      let c = p-(a+b),
->                                      a^2 + b^2 == c^2]
->
-> factors :: Integral a => a -> [a]
-> factors = undefined
->
-> cartesianProduct :: [a] -> [b] -> [(a,b)]
-> cartesianProduct = undefined
->
-> concat' :: [[a]] -> [a]
-> concat' = undefined
-
-
-Common list functions
----------------------
-
-The "Prelude" module defines many useful list functions (some of which we 
-implemented above). They include:
-
-  - Basic operations:
-
-    head :: [a] -> a
-    tail :: [a] -> [a]
-    null :: [a] -> Bool
-    length :: [a] -> Int
-    last :: [a] -> a
-    (++) :: [a] -> [a] -> [a]
-    (!!) :: [a] -> Int -> a
-
-  - Building lists:
-
-    repeat :: a -> [a]
-    replicate :: Int -> a -> [a]
-    cycle :: [a] -> [a]
-
-  - Lists -> Lists:
-
-    concat :: [[a]] -> [a]
-    reverse :: [a] -> [a]
-    zip :: [a] -> [b] -> [(a,b)]
-
-  - Extracting sublists:
-
-    take :: Int -> [a] -> [a]
-    drop :: Int -> [a] -> [a]
-    splitAt :: Int -> [a] -> ([a], [a])
-    break :: (a -> Bool) -> [a] -> ([a], [a])
-
-  - Class specific:
-
-    elem :: Eq a => a -> [a] -> Bool
-    maximum :: Ord a => [a] -> a
-    minimum :: Ord a => [a] -> a
-    sum :: Num a => [a] -> a
-    product :: Num a => [a] -> a
-    lines :: String -> [String]
-    words :: String -> [String]
-
-Note: many of these functions operate on a type class that includes lists and
-      other recursive data types (We'll see how this works later.)
-
-
-List processing functions
--------------------------
-
--- Pattern matching
-
-`[]` and `:` can be used to pattern match against lists (we'll see that all
-value constructors can be used for pattern matching). So the first three basic
-operations are trivial to re-implement:
-
-> head' :: [a] -> a
-> head' (x:_) = x
->
-> tail' :: [a] -> [a]
-> tail' (_:xs) = xs
-> 
-> null' :: [a] -> Bool
-> null' [] = True
-> null' _  = False
-
-
-But most other list-processing functions need to potentially extract multiple
-values from the list. A common technique for doing this is structural recursion.
-
-
--- Structural recursion
-
-Structural recursion loosely describes a pattern for writing functions that
-handle recursively defined data types (like the list). When called with a value
-of such a type, a structurally recursive function will:
-
-  1. start by determining how the value was constructed
-
-  2. if the value is not a recursive instance of the data type, simply process
-     its immediate contents
-
-  3. if the value is a recursive instance of the data type, "deconstruct" it to 
-     process its immediate contents, then recurse on the nested value(s)
-
-Pattern matching in Haskell helps with both (1) and (3).
-
-E.g., to compute the length of a list:
-
-> length' :: [a] -> Int
-> length' [] = 0
-> length' (x:xs) = 1 + length' xs
-
-E.g., more built-in functions:
-
-> last' :: [a] -> a
-> last' = undefined
+> prop_zeroDistance :: (Double,Double) -> Bool
+> prop_zeroDistance (x,y) = distance (x,y) (x,y) =~= 0
 >
 >
-> (+++) :: [a] -> [a] -> [a]
-> (+++) = undefined
->
->
-> (!!!) :: [a] -> Int -> a -- the ! in its name is an implicit warning as to its inefficiency!
-> (!!!) = undefined
->
->
-> reverse' :: [a] -> [a]
-> reverse' = undefined
->
->
-> take' :: Int -> [a] -> [a]
-> take' = undefined
->
->
-> splitAt' :: Int -> [a] -> ([a], [a])
-> splitAt' = undefined
->
->
-> break' :: (a -> Bool) -> [a] -> ([a], [a])
-> break' = undefined
->
->
-> words' :: String -> [String]
-> words' = undefined
+> prop_straightLineDistances :: (Double,Double) -> Double -> Bool
+> prop_straightLineDistances (x,y) d = vert_d =~= abs d && hori_d =~= abs d
+>   where vert_d = distance (x,y) (x,y+d)
+>         hori_d = distance (x,y) (x+d,y)
 
-E.g., the Caesar cipher is an encryption scheme that takes a plain text input
-string P and a shift value N, and produces an encrypted version of the string
-by replacing each letter in P with one N letters away in the alphabet (wrapping
-around, if needed).
 
-For the string "HELLO WORLD" and a shift value of 5:
+Define a `Spec` combining property-based and unit tests:
 
-  Plain:      H E L L O  W O R L D
-  Encrypted:  M J Q Q T  B T W Q I
+> distanceSpec :: Spec
+> distanceSpec = 
+>   describe "distance" $ do
+>     it "always returns a positive value" $ 
+>       property prop_alwaysPositive
+>     it "is commutative" $ 
+>       property prop_commDistance
+>     it "straight line distances are computed correctly" $
+>       property prop_straightLineDistances
+>     it "matches known results" $ do
+>       distance (0,0) (3,4) `shouldSatisfy` (=~= 5)
+>       distance (10,10) (13,14) `shouldSatisfy` (=~= 5)
 
-To implement the Caesar cipher, we need to be able to convert characters from/to
-their corresponding ASCII codes. `ord`/`chr` do this. `isLetter` can be used to
-determine if a character is a letter. We'll convert all letters to uppercase
-for simplicity with `toUpper`.
+---
 
-> caesar :: Int -> String -> String
-> caesar = undefined
+E.g., define properties for quadratic roots function `quadRoots`:
+
+> quadRoots :: (Floating a, Ord a) => a -> a -> a -> (a, a)
+> quadRoots a b c 
+>     | disc >= 0 = ((-b + sqrt_d) / (2*a), (-b - sqrt_d) / (2*a))
+>     | otherwise = error "No real roots"
+>   where disc   = b^2 - 4*a*c
+>         sqrt_d = sqrt disc
+>
+>
+> prop_perfSquare :: Double -> Bool
+> prop_perfSquare f = r1 =~= r2
+>   where b = 2*f
+>         c = f^2
+>         (r1,r2) = quadRoots 1 b c
+>
+>
+> prop_solvesFactored :: Double -> Double -> Bool
+> prop_solvesFactored f1 f2 = r1^2 + b*r1 + c =~= 0 && r2^2 + b*r2 + c =~= 0
+>   where b = f1 + f2
+>         c = f1 * f2
+>         (r1,r2) = quadRoots 1 b c
+
+
+Define a `Spec` combining property-based and unit tests:
+
+> quadRootsSpec :: Spec
+> quadRootsSpec = 
+>   describe "quadRoots" $ do
+>     it "works correctly with perfect squares" $ 
+>       property prop_perfSquare
+>     it "works correctly with factorable quadratic equations" $ 
+>       property prop_solvesFactored
+>     it "fails on equations with negative discriminants" $ do
+>       evaluate (quadRoots 1 1 1) `shouldThrow` anyErrorCall
+
+
+Test coverage
+-------------
+
+How much of our code are we actually testing? 
+
+  - are there functions we're never calling?
+
+  - are there patterns we're never matching?
+
+  - are there guards/branches we aren't taking?
+
+  - are there unneeded local bindings? 
+
+  - are there unreachable sections of code?
+
+`stack test --coverage` generates a coverage report for all modules tested.
+
+100% test coverage is a noble and worthwhile goal!
