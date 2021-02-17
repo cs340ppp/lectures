@@ -1,11 +1,11 @@
-module Lect.Lect04Spec (spec) where
+module Lect.Lect05Spec (spec) where
 
 import Test.Hspec
 import Test.HUnit
 import Test.HUnit.Approx
 import Test.QuickCheck
 import Control.Exception
-import Lect.Lect04 (nand, c2h, distance, quadRoots)
+import Lect.Lect05 (nand, c2h, distance, quadRoots)
 
 
 spec :: Spec
