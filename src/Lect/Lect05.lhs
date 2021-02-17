@@ -3,6 +3,7 @@
 % Michael Lee
 
 > module Lect.Lect05 where
+> import Data.Char
 > import Control.Exception
 > import Test.HUnit
 > import Test.HUnit.Approx
@@ -208,6 +209,16 @@ E.g., some arithmetic properties:
 > prop_distMultOverAdd x y z = x * (y + z) == x * y + x * z
 
 Test predicates by passing them to `quickCheck` or `verboseCheck`.
+
+---
+
+E.g., shrinking in action:
+
+> prop_wrongSum :: [Int] -> Bool
+> prop_wrongSum xs = sum xs == brokenSum xs
+>   where brokenSum [] = 0
+>         brokenSum (8:xs) = 7 + brokenSum xs
+>         brokenSum (x:xs) = x + brokenSum xs
 
 ---
 
