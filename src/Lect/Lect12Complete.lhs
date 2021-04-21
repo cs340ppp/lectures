@@ -1,5 +1,5 @@
 % CS 340: Programming Paradigms and Patterns
-% Lect 11 - Search
+% Lect 12 - Search
 % Michael Lee
 
 \begin{code}
@@ -8,7 +8,7 @@
 -- source file instead of '>' line prefixes --- this is because there's going 
 -- to be a bit more code than usual!
 
-module Lect.Lect11Complete where
+module Lect.Lect12Complete where
 import Prelude hiding (lines)
 import Data.Maybe
 import Data.Ord
