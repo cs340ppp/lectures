@@ -208,9 +208,8 @@ Then Applicative:
 
 > instance Applicative (State s) where
 >   pure x = State $ \s -> (s, x)
->   stf <*> stx = State $ \s -> let (s', f)  = runState stf s
->                                   (s'', x) = runState stx s'
->                               in (s'', f x)
+>   stf <*> stx = State $ \s -> let (s', f) = runState stf s
+>                               in runState (f <$> stx) s'
 
 And finally Monad:
 
@@ -282,6 +281,7 @@ represented by `State` monad values) is `sequence`:
 
 > sequence :: Monad m => [m a] -> m [a]
 > sequence [] = return []
+> -- sequence (m:ms) = m >>= \x -> sequence ms >>= \xs -> return (x:xs)
 > sequence (m:ms) = do x <- m
 >                      xs <- sequence ms
 >                      return $ x:xs
@@ -300,6 +300,7 @@ Sometimes we don't care about the result of a monadic action (e.g., for the
 
 > sequence_ :: Monad m => [m a] -> m ()
 > sequence_ [] = return ()
+> -- sequence_ (m:ms) = m >> sequence_ ms
 > sequence_ (m:ms) = do m
 >                       sequence_ ms
 >
@@ -493,7 +494,8 @@ Here's a function that implements a guessing game:
 >                           guess n
 >                  GT -> do putStrLn "Too big!"
 >                           guess n
->                  otherwise -> return ()
+>                  otherwise -> do putStrLn "Good guess!"
+>                                  return ()
 
 Notice how we're basically constructing a huge chain of IO actions via the bind
 operator (which is hidden by `do` notation). Also, note how we use recursion to

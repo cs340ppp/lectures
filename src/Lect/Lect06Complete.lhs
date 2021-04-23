@@ -123,9 +123,7 @@ E.g., compute all permutations of values in a list
         - above patterns point to a non-recursive solution using a 
           list comprehensions
 
-          > interleave x ys = [lhs ++ [x] ++ rhs 
-          >                    | i <- [0..length ys], 
-          >                      let (lhs, rhs) = splitAt i ys]
+          > interleave x l@(y:ys) = (x:l) : [y:ll | ll <- interleave x ys]
 
 5. ensure that the values are "shrunk" in recursive calls
 
