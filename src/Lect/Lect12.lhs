@@ -15,7 +15,8 @@ import Data.Ord
 import Data.List hiding (lines)
 import Data.List.Split (chunksOf)
 import Data.Tree
-import Data.Map (Map, empty, fromList, findWithDefault, member, insertWith)
+import Data.Map (Map, empty, fromList, (!), keys, elems, assocs,
+                 findWithDefault, member, insert, insertWith)
 import System.Random
 import System.Random.Shuffle
 import Control.Monad.State
@@ -70,24 +71,6 @@ data Maze = Maze {
 \end{code}
 
 
-Next, some utility functions for building up our mazes:
-
-\begin{code}
--- return adjacent (but not necessarily accessible) locations
-adjLocs :: MazeDims -> MazeLoc -> [MazeLoc]
-adjLocs (w, h) (x, y) = 
-  [(x', y') | (dx, dy) <- [(-1,0), (0,-1), (1,0), (0,1)],
-              let (x', y') = (x+dx, y+dy),
-              x' > 0 && x' <= w,
-              y' > 0 && y' <= h]
-
--- connects two adjacent locations in the maze by inserting them into
--- each others' lists in the adjacency map
-openWall :: MazeLoc -> MazeLoc -> Maze -> Maze
-openWall l1 l2 mz@(Maze _ _ cmap) = undefined
-\end{code}
-
-
 And to help us visualize the mazes we generate, some drawing functions (which
 return ASCII art strings):
 
@@ -118,6 +101,24 @@ instance Show Maze where
 \end{code}
 
 
+Next, some utility functions for building up our mazes:
+
+\begin{code}
+-- return adjacent (but not necessarily accessible) locations
+adjLocs :: MazeDims -> MazeLoc -> [MazeLoc]
+adjLocs (w, h) (x, y) = 
+  [(x', y') | (dx, dy) <- [(-1,0), (0,-1), (1,0), (0,1)],
+              let (x', y') = (x+dx, y+dy),
+              x' > 0 && x' <= w,
+              y' > 0 && y' <= h]
+
+-- connects two adjacent locations in the maze by inserting them into
+-- each others' lists in the adjacency map
+openWall :: MazeLoc -> MazeLoc -> Maze -> Maze
+openWall l1 l2 mz@(Maze _ _ cmap) = undefined
+\end{code}
+
+
 -- Random values and State
 
 Before we think about generating random mazes, we need to think about how to
@@ -145,7 +146,7 @@ Let's write a version of `randomRange` that works on this principle:
 \begin{code}
 type Seed = Int
 
-randomRange :: Seed -> Int -> (Int, Seed)
+randomRange :: Int -> Seed -> (Int, Seed)
 randomRange max seed = undefined
 \end{code}
 

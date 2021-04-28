@@ -15,7 +15,8 @@ import Data.Ord
 import Data.List hiding (lines)
 import Data.List.Split (chunksOf)
 import Data.Tree
-import Data.Map (Map, empty, fromList, findWithDefault, member, insertWith)
+import Data.Map (Map, empty, fromList, (!), keys, elems, assocs,
+                 findWithDefault, member, insert, insertWith)
 import System.Random
 import System.Random.Shuffle
 import Control.Monad.State
@@ -70,26 +71,6 @@ data Maze = Maze {
               mazePath :: MazePath,
               mazeAdjMap :: Map MazeLoc [MazeLoc] 
             } deriving (Eq)
-
-\end{code}
-
-
-Next, some utility functions for building up our mazes:
-
-\begin{code}
--- return adjacent (but not necessarily accessible) locations
-adjLocs :: MazeDims -> MazeLoc -> [MazeLoc]
-adjLocs (w, h) (x, y) = 
-  [(x', y') | (dx, dy) <- [(-1,0), (0,-1), (1,0), (0,1)],
-              let (x', y') = (x+dx, y+dy),
-              x' > 0 && x' <= w,
-              y' > 0 && y' <= h]
-
--- connects two adjacent locations in the maze by inserting them into
--- each others' lists in the adjacency map
-openWall :: MazeLoc -> MazeLoc -> Maze -> Maze
-openWall l1 l2 mz@(Maze _ _ cmap) = 
-  mz { mazeAdjMap = insertWith (++) l2 [l1] $ insertWith (++) l1 [l2] cmap }
 \end{code}
 
 
@@ -121,6 +102,27 @@ drawMaze m@(Maze (w, h) _ _) = (concat $ map drawRow $ chunksOf w drawnCells)
 instance Show Maze where
   show = drawMaze        
 \end{code}
+
+
+Next, some utility functions for building up our mazes:
+
+\begin{code}
+-- return adjacent (but not necessarily accessible) locations
+adjLocs :: MazeDims -> MazeLoc -> [MazeLoc]
+adjLocs (w, h) (x, y) = 
+  [(x', y') | (dx, dy) <- [(-1,0), (0,-1), (1,0), (0,1)],
+              let (x', y') = (x+dx, y+dy),
+              x' > 0 && x' <= w,
+              y' > 0 && y' <= h]
+
+-- connects two adjacent locations in the maze by inserting them into
+-- each others' lists in the adjacency map
+openWall :: MazeLoc -> MazeLoc -> Maze -> Maze
+openWall l1 l2 mz@(Maze _ _ cmap) = 
+  mz { mazeAdjMap = insertWith (++) l2 [l1] $ insertWith (++) l1 [l2] cmap }
+\end{code}
+
+
 
 
 -- Random values and State
@@ -159,7 +161,7 @@ specified range, too.
 \begin{code}
 type Seed = Int
 
-randomRange :: Seed -> Int -> (Int, Seed)
+randomRange :: Int -> Seed -> (Int, Seed)
 randomRange max seed = (seed `mod` max, 7*seed `mod` 101)
 \end{code}
 
