@@ -27,7 +27,13 @@ and must also be separated from other text by at least one empty line.
 All lecture notes will be provided as literate source files. Here's what code
 would look like in a literate source file:
 
-> welcome = putStrLn "Welcome to CS 340!"
+> welcome = "Welcome to CS 340!"
+
+You can also surround code with begin/end markers, like this:
+
+\begin{code}
+  courseName = "Programming Paradigms and Patterns"
+\end{code}
 
 
 Development workflow and tools
