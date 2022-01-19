@@ -1,0 +1,49 @@
+name:                cs340
+version:             0.1.0.0
+author:              "Michael Lee"
+
+extra-source-files:
+- README.md
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- split
+- bytestring
+- hspec
+- HUnit
+- HUnit-approx
+- QuickCheck
+- test-invariant
+- mtl
+- array
+- deepseq
+- random
+- random-shuffle
+- containers
+- ansi-terminal
+
+library:
+  source-dirs: src
+
+executables:
+  cs340-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs340
+
+tests:
+  cs340-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs340
