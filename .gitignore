@@ -2,7 +2,7 @@
 cs340.cabal
 stack*.yaml.lock
 *~
-dist
+dist*
 cabal-dev
 *.o
 *.hi
@@ -19,3 +19,4 @@ cabal.sandbox.config
 *.hp
 .DS_Store
 .#*
+*.code-workspace

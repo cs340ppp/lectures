@@ -1,9 +1,15 @@
 name:                cs340
 version:             0.1.0.0
+github:              "cs340ppp/lectures"
+license:             MIT
 author:              "Michael Lee"
+maintainer:          "lee@iit.edu"
+copyright:           "2023 Michael Lee"
 
 extra-source-files:
 - README.md
+
+description:         See <https://github.com/cs340ppp/lectures#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -23,8 +29,13 @@ dependencies:
 - containers
 - ansi-terminal
 
+ghc-options: []
+
 library:
   source-dirs: src
+  when:
+  - condition: false
+    other-modules: Paths_cs340
 
 executables:
   cs340-exe:
@@ -36,6 +47,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - cs340
+    when:
+    - condition: false
+      other-modules: Paths_cs340
 
 tests:
   cs340-test:
