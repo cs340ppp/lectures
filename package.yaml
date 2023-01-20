@@ -8,6 +8,7 @@ copyright:           "2023 Michael Lee"
 
 extra-source-files:
 - README.md
+- INSTALL.md
 
 description:         See <https://github.com/cs340ppp/lectures#readme>
 
