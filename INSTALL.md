@@ -25,9 +25,7 @@ On macOS, you will need to have command line tools installed. You can install th
 
 ## Video Tutorial (for the next two sections)
 
-If you prefer to watch a video tutorial, you can watch the following video:
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/9lF7JpvHsEk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+If you prefer to watch a video tutorial, you can visit <https://youtu.be/9lF7JpvHsEk>
 
 ## Installing GHCup
 
