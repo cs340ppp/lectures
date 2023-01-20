@@ -70,9 +70,9 @@ What are the types of the following functions?
 
     not
     isDigit
-    odd
-    exp
-    fromIntegral
+    toUpper
+    ord
+    chr
 
 
 Function application
@@ -159,7 +159,7 @@ Check out these polymorphic functions? Can you guess what they do?
       fst
       snd
       .
-      until
+      flip
   
 
 The type declaration of a polymorphic function can give a lot of information about what the function does! (Why?)
@@ -200,8 +200,10 @@ Polymorphic function type declarations can include *class constraints* for type 
 Inspect and explain the type declarations for:
 
     ^
+    exp
     /=
     <
+    fromIntegral
     read
     sort
     lookup
