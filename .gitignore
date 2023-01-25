@@ -20,3 +20,4 @@ cabal.sandbox.config
 .DS_Store
 .#*
 *.code-workspace
+Temp.hs
