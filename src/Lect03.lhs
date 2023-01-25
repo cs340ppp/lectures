@@ -106,12 +106,12 @@ E.g., redefine `fib` using guards. Is it any clearer?
 
 E.g., define `c2h`, which converts Celsius to a "human readable" string:
 
-> c2h :: (Fractional a, Ord a) => a -> String
+> c2h :: (Floating a, Ord a) => a -> String
 > c2h = undefined
 
 E.g., define `quadrant` which returns the quadrant of a point:
 
-> quadrant :: (Ord a, Num a) => (a, a) -> Int
+> quadrant :: (Num a, Ord a) => (a, a) -> Int
 > quadrant = undefined
 
 -- `where` clause
@@ -120,7 +120,7 @@ A `where` clause lets us create a local binding for a var or function.
 
 E.g., redefine `c2h` using a `where` clause:
 
-> c2h' :: (Fractional a, Ord a) => a -> String
+> c2h' :: (Floating a, Ord a) => a -> String
 > c2h' = undefined
 
 
