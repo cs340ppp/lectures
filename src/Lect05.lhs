@@ -120,29 +120,18 @@ f2c f = (f - 32) * 5/9
 
 celsiusConversionSpec :: Spec
 celsiusConversionSpec = 
- describe "Celsius conversions" $ do
-   describe "c2k" $ do
-     it "works for known examples" $ do
-       c2k 0 `shouldBe` 273.15
-       c2k 100 `shouldBe` 373.15
-     it "fails for sub-abs-zero temperatures" $ do
-       evaluate (c2k (-274)) `shouldThrow` anyException
-   describe "c2f" $ do
-     it "works for known examples" $ do
-       c2f 0 `shouldBe` 32
-       c2f 100 `shouldBe` 212
-       c2f 500.1 `shouldSatisfy` (=~= 932.18)
-   describe "f2c" $ do
-     it "works for known examples" $ do
-       f2c 32 `shouldBe` 0
-       f2c 212 `shouldBe` 100
-       f2c 932.18 `shouldSatisfy` (=~= 500.1)
-
-
--- operator for approximate equality
-infix 4 =~=
-(=~=) :: (Floating a, Ord a) =>  a -> a -> Bool
-x =~= y = abs (x - y) < 0.0001
+  describe "Celsius conversions" $ do
+    describe "c2k" $ do
+      it "works for known examples" $ do
+        pending
+      it "fails for sub-abs-zero temperatures" $ do
+        pending
+    describe "c2f" $ do
+      it "works for known examples" $ do
+        pending
+    describe "f2c" $ do
+      it "works for known examples" $ do
+        pending
 \end{code}
 
 
@@ -161,27 +150,13 @@ quadRootsSpec :: Spec
 quadRootsSpec = 
   describe "quadRoots" $ do
     it "works for known examples" $ do
-      quadRoots 1 3 2 `shouldMatchTuple` (-1, -2)
-      quadRoots 1 4 4 `shouldMatchTuple` (-2, -2)
-      quadRoots 1 5 6 `shouldMatchTuple` (-2, -3)
+      pending
     it "fails when non-real roots exist" $ do
-      evaluate (quadRoots 1 0 1) `shouldThrow` anyException
-
-
-shouldMatchTuple :: (Eq a, Show a) => (a, a) -> (a, a) -> Expectation
-shouldMatchTuple (x1, x2) (y1, y2) = [x1, x2] `shouldMatchList` [y1, y2]
+      pending
 \end{code}
 
 
 Discussion: what are some problems / shortcomings of example-based testing?
-
-  - tedious to write/maintain
-  - not exhaustive (e.g., what if we forget to test a corner case?)
-  - not scalable (e.g., what if we have a large number of functions to test?)
-  - not general (e.g., what if we want to test a property that doesn't have a
-    specific input/output?)
-  - not expressive (e.g., doesn't really document the behavior we're testing)
-  - doesn't help us narrow down the cause of a failure
 
 
 Property-based tests with QuickCheck
@@ -207,32 +182,7 @@ E.g., write a property to test that `c2f` and `f2c` are inverses:
 
 \begin{code}
 prop_c2f2c :: Double -> Bool
-prop_c2f2c c = f2c (c2f c) =~= c
-
--- test predicates by passing them to `quickCheck` or `verboseCheck`
--- can do `quickCheck (withMaxSuccess 1000 property)` to run more tests
-
-
-cTemp :: Gen Double
-cTemp = choose (-273.15, 1000)
-
--- play with generators with `generate` and `sample`, e.g.,
---
---   `sample cTemp`,
---   `sample (arbitrary :: Gen Int)`,
---   `sample (arbitrary :: Gen [Int])`,
---   `sample (arbitrary :: Gen [(Int, Bool, Char)])`,
---   `sample (choose (1, 100)`,
---   `sample (listOf (choose (1, 100)))`,
---   `sample (resize 100 (listOf (choose (1, 100))))`
-
-
-prop_c2f2c' :: Property
-prop_c2f2c' = forAll cTemp prop_c2f2c
-
-
-prop_c2f2c'' :: Double -> Property
-prop_c2f2c'' c = c >= -273.15 ==> f2c (c2f c) =~= c
+prop_c2f2c = undefined
 \end{code}
 
 
@@ -241,13 +191,11 @@ E.g., write a property to test `mySum` using `sum` as a reference implementation
 \begin{code}
 mySum :: (Eq a, Num a) => [a] -> a
 mySum [] = 0
--- mySum (8:xs) = 7 + mySum xs -- broken sum / dist
--- mySum (7:8:xs) = 7 + 9 + mySum xs -- broken comm
 mySum (x:xs) = x + mySum xs
 
 
 prop_sum :: [Integer] -> Bool
-prop_sum xs = mySum xs == sum xs
+prop_sum = undefined
 \end{code}
 
 
@@ -256,11 +204,11 @@ addition and commutativity of addition:
 
 \begin{code}
 prop_distMultOverAdd :: Integer -> [Integer] -> Bool
-prop_distMultOverAdd n xs = mySum [n*x | x <- xs] == n * mySum xs
+prop_distMultOverAdd = undefined
 
 
 prop_commAdd :: [Integer] -> Property
-prop_commAdd xs = forAll (shuffle xs) (\ys -> mySum xs == mySum ys)
+prop_commAdd = undefined
 \end{code}
 
 
@@ -269,18 +217,11 @@ squares and factorable quadratic equations:
 
 \begin{code}
 prop_perfSquare :: Double -> Bool
-prop_perfSquare f = r1 =~= r2
-  where b = 2*f
-        c = f^2
-        (r1,r2) = quadRoots 1 b c
+prop_perfSquare = undefined
 
 
 prop_solvesFactored :: Double -> Double -> Bool
-prop_solvesFactored f1 f2 = r1^2 + b*r1 + c =~= 0 
-                         && r2^2 + b*r2 + c =~= 0
-  where b = f1 + f2
-        c = f1 * f2
-        (r1,r2) = quadRoots 1 b c
+prop_solvesFactored = undefined
 \end{code}
 
 
@@ -291,15 +232,13 @@ quadRootsSpec' :: Spec
 quadRootsSpec' = 
   describe "quadRoots" $ do
     it "works for known examples" $ do
-      quadRoots 1 3 2 `shouldMatchTuple` (-1, -2)
-      quadRoots 1 4 4 `shouldMatchTuple` (-2, -2)
-      quadRoots 1 5 6 `shouldMatchTuple` (-2, -3)
+      pending
     it "fails when non-real roots exist" $ do
-      evaluate (quadRoots 1 0 1) `shouldThrow` anyException
+      pending
     it "works correctly with perfect squares" $ 
-      property prop_perfSquare
+      pending
     it "works correctly with factorable quadratic equations" $ 
-      property prop_solvesFactored
+      pending
 \end{code}
 
 
