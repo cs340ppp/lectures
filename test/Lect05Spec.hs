@@ -5,71 +5,82 @@ import Test.HUnit
 import Test.HUnit.Approx
 import Test.QuickCheck
 import Control.Exception
-import Lect05 (nand, c2h, distance, quadRoots)
+import Lect05 (c2k, c2f, f2c, mySum, quadRoots)
+import Test.Hspec.QuickCheck (prop)
 
 
 spec :: Spec
-spec = describe "Lect04" $ do
-  describe "nand" $ do
-    it "works correctly" $ do
-      assertEqual "nand True True"   False (nand True True)
-      assertEqual "nand True False"  True  (nand True False)
-      assertEqual "nand False True"  True  (nand False True)
-      assertEqual "nand False False" True  (nand False False)
+spec = describe "Lect05" $ do
+  describe "Celsius conversions" $ do
+    describe "c2k" $ do
+      it "works for known examples" $ do
+        c2k 0 `shouldBe` 273.15
+        c2k 100 `shouldBe` 373.15
+      it "fails for sub-abs-zero temperatures" $ do
+        evaluate (c2k (-274)) `shouldThrow` anyException
+    describe "c2f" $ do
+      it "works for known examples" $ do
+        c2f 0 `shouldBe` 32
+        c2f 100 `shouldBe` 212
+        c2f 500.1 `shouldSatisfy` (=~= 932.18)
+    describe "f2c" $ do
+      it "works for known examples" $ do
+        f2c 32 `shouldBe` 0
+        f2c 212 `shouldBe` 100
+        f2c 932.18 `shouldSatisfy` (=~= 500.1)
 
-  describe "c2h" $ do
-    it "works for too-hot temperatures" $ do
-      c2h 38 `shouldBe` "too hot"
-      c2h 50 `shouldBe` "too hot"
-    it "works for too-cold temperatures" $ do
-      c2h (-18) `shouldBe` "too cold"
-      c2h (-30) `shouldBe` "too cold"
-    it "works for tolerable temperatures" $ do
-      c2h 37 `shouldBe` "tolerable"
-      c2h (-17) `shouldBe` "tolerable"
-      c2h 25 `shouldBe` "tolerable"
-    
-  describe "distance" $ do
-    it "always returns a positive value" $ 
-      property prop_alwaysPositive
-    it "is commutative" $ 
-      property prop_commDistance
-    it "matches known results" $ do
-      distance (0,0) (3,4) `shouldBe` 5
-      distance (10,10) (13,14) `shouldBe` 5
-      
+  describe "mySum" $ do
+    it "matches the reference implementation" $ 
+      property prop_sum
+    it "demonstrates distributivity w.r.t. multiplication" $
+      property prop_distMultOverAdd
+    it "demonstrates commutativity" $
+      property prop_commAdd
+
   describe "quadRoots" $ do
+    it "works for known examples" $ do
+      quadRoots 1 3 2 `shouldMatchTuple` (-1, -2)
+      quadRoots 1 4 4 `shouldMatchTuple` (-2, -2)
+      quadRoots 1 5 6 `shouldMatchTuple` (-2, -3)
+    it "fails when non-real roots exist" $ do
+      evaluate (quadRoots 1 0 1) `shouldThrow` anyException
     it "works correctly with perfect squares" $ 
       property prop_perfSquare
     it "works correctly with factorable quadratic equations" $ 
       property prop_solvesFactored
-    it "fails on equations with negative discriminants" $ do
-      evaluate (quadRoots 1 1 1) `shouldThrow` anyErrorCall
         
 
 infix 4 =~=
 (=~=) :: (Floating a, Ord a) =>  a -> a -> Bool
 x =~= y = abs (x - y) < 0.0001
 
-
-prop_alwaysPositive :: (Double,Double) -> (Double,Double) -> Bool
-prop_alwaysPositive (x1,y1) (x2,y2) = distance (x1,y1) (x2,y2) >= 0
-
-
-prop_commDistance :: (Double,Double) -> (Double,Double) -> Bool
-prop_commDistance (x1,y1) (x2,y2) = d1 =~= d2
-  where d1 = distance (x1,y1) (x2,y2)
-        d2 = distance (x2,y2) (x1,y1)
+shouldMatchTuple :: (Eq a, Show a) => (a, a) -> (a, a) -> Expectation
+shouldMatchTuple (x1, x2) (y1, y2) = [x1, x2] `shouldMatchList` [y1, y2]
 
 
-prop_zeroDistance :: (Double,Double) -> Bool
-prop_zeroDistance (x,y) = distance (x,y) (x,y) =~= 0
+prop_c2f2c :: Double -> Bool
+prop_c2f2c c = f2c (c2f c) =~= c
+
+cTemp :: Gen Double
+cTemp = choose (-273.15, 1000)
+
+prop_c2f2c' :: Property
+prop_c2f2c' = forAll cTemp prop_c2f2c
+
+prop_c2f2c'' :: Double -> Property
+prop_c2f2c'' c = c >= -273.15 ==> f2c (c2f c) =~= c
 
 
-prop_straightLineDistances :: (Double,Double) -> Double -> Bool
-prop_straightLineDistances (x,y) d = vert_d =~= abs d && hori_d =~= abs d
-  where vert_d = distance (x,y) (x,y+d)
-        hori_d = distance (x,y) (x+d,y)
+prop_sum :: [Integer] -> Bool
+prop_sum xs = mySum xs == sum xs
+
+
+prop_distMultOverAdd :: Integer -> [Integer] -> Bool
+prop_distMultOverAdd n xs = mySum [n*x | x <- xs] == n * mySum xs
+
+
+prop_commAdd :: [Integer] -> Property
+prop_commAdd xs = forAll (shuffle xs) (\ys -> mySum xs == mySum ys)
 
 
 prop_perfSquare :: Double -> Bool
@@ -80,7 +91,8 @@ prop_perfSquare f = r1 =~= r2
 
 
 prop_solvesFactored :: Double -> Double -> Bool
-prop_solvesFactored f1 f2 = r1^2 + b*r1 + c =~= 0 && r2^2 + b*r2 + c =~= 0
+prop_solvesFactored f1 f2 = r1^2 + b*r1 + c =~= 0 
+                         && r2^2 + b*r2 + c =~= 0
   where b = f1 + f2
         c = f1 * f2
         (r1,r2) = quadRoots 1 b c
