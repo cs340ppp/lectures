@@ -1,4 +1,5 @@
 .stack-work/
+.vscode/
 cs340.cabal
 stack*.yaml.lock
 *~
