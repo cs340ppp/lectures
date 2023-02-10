@@ -65,7 +65,7 @@ cycle'' = undefined
 
 -- we'll need to pass values into subsequent iterations to track progress
 fibs :: [Integer]
-fibs = = undefined
+fibs = undefined
 \end{code}
 
 
@@ -76,13 +76,11 @@ Filtering is the process of iterating over a list and processing only those elem
 \begin{code}
 -- sum only the positive numbers in a list
 sumPositives :: Integral a => [a] -> a
-sumPositives [] = 0
 sumPositives = undefined
 
 
 -- palindroms are strings that read the same forwards as backwards
 palindromes :: [String] -> [String]
-palindromes [] = []
 palindromes = undefined
 \end{code}
 
@@ -95,7 +93,6 @@ in many different problems.
 \begin{code}
 -- generate all combinations (order doesn't matter -- how many are there?)
 combinations :: [a] -> [[a]]
-combinations [] = [[]]
 combinations = undefined
 
 
