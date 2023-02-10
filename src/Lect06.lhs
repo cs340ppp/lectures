@@ -2,150 +2,211 @@
 % Lect 06 - Recursion
 % Michael Lee
 
-> module Lect06 where
+\begin{code}
+module Lect06 where
+import Debug.Trace
+import qualified Data.Set as Set
+\end{code}
 
 Recursion
 =========
 
 Agenda:
-  - Designing recursive functions
-  - Structural vs. Generative recursion
-  - Accumulators and Tail recursion
+
+  - Some common patterns of recursion:
+     A. Iteration & Reduction
+     B. Filtering
+     C. Combinations & Permutations
+     D. Divide & Conquer
+     E. Tail recursion & Accumulation
+  - How to trace and debug in Haskell
+  - How laziness affects recursive call evaluation
 
 
-Designing recursive functions
------------------------------
+A. Iteration & Reduction
 
-Steps:
-  1. determine the function type
-  2. identify which inputs can be decomposed into subproblems
-  3. define the function for input patterns that can be handled non-recursively
-  4. define the function for input patterns that require recursion
-  5. ensure that the values are "shrunk" in recursive calls
-  6. generalize and simplify
+Iteration is the process of repeatedly applying a function to a value
+until one or more conditions (base cases) are met. It often makes sense to 
+think of iteration as incrementally "building up" a result, as in constructing 
+a list element by element. Sometimes, iteration is used to "reduce" an input to a final value (e.g., as in summing up the elements of a list).
 
-In steps 3 and 4, we might discover that we need additional functions, which 
-themselves require stepping through the design process!
+E.g., implement the following functions using iteration/reduction:
 
----
-
-E.g., summing integer values from 0 up to N:
-
-> sumTo :: undefined
-> sumTo = undefined
-
---- 
-
-E.g., compute all permutations of values in a list
-
-> permutations :: undefined
-> permutations = undefined
+\begin{code}
+-- a classic!
+factorial :: Integer -> Integer
+factorial = undefined
 
 
-Structural vs. Generative recursion
------------------------------------
-
-The above recipe may apply when a problem can be tidily decomposed into
-subproblems according to the implicit structure of the values involved. E.g.,
-solving a problem represented as a list by processing its head and recursing on
-its tail.
-
-But not all recursive functions follow this pattern! Sometimes solving a problem
-recursively requires that the input values be transformed into new values which
-aren't clearly substructures of nor "smaller" than the originals. 
-
-This is sometimes called "generative" recursion. Their design is the domain of
-algorithms.
-
----
-
-E.g., Newton's method for finding the square root of N starts with a guess g
-      (say, N/2), then tests to see if it is good enough (i.e., if the square of
-      the g^2 == N); if not, we improve the guess by average g with n/g and try
-      again. The intuition is that if g is too small, n/g will be increase the 
-      guess, and if g is too big, n/g will decrease.
+-- sum up the elements of a list
+sumList :: (Show a, Num a) => [a] -> a
+sumList = undefined
 
 
-> newtonsSqrt :: undefined
-> newtonsSqrt = undefined
->
-> infix 4 =~= -- approx equals (might come in handy)
-> (=~=) :: (Floating a, Ord a) =>  a -> a -> Bool
-> x =~= y = abs (x - y) < 0.000001
-
----
-
-E.g., sort a list of values by splitting it in two, sorting each half, then 
-merging the sorted results:
-
-> mergesort :: undefined
-> mergesort = undefined
+-- sometimes we iterate over lists in parallel
+weightedSum :: (Show a, Num a) => [a] -> [a] -> a
+weightedSum = undefined
 
 
-Accumulators and Tail recursion
--------------------------------
+-- sometimes we process more than one "item" at a time
+swapLetters :: String -> String
+swapLetters = undefined
 
-Some recursive functions are more naturally written and/or efficient when
-implemented with an *accumulator*. 
 
-E.g., consider our original implementation of `reverse`:
+-- implement this using append (++)
+cycle' :: [a] -> [a]
+cycle' = undefined
 
-> reverse' :: [a] -> [a]
-> reverse' [] = []
-> reverse' (x:xs) = reverse' xs ++ [x]
 
-This is inefficient, because the concatenation operator (++) needs to "search
-for the end" of its first argument list (which is also the result of the
-recursive call) in order to do its job. It would be more efficient to use the
-`:` operator to incrementally build up a partially reversed list over the course
-of the recursion. 
+-- can we do better? (why is it better?)
+cycle'' :: [a] -> [a]
+cycle'' = undefined
 
-> reverse'' :: [a] -> [a] -> [a]
-> reverse'' = undefined
 
-The second argument of `reverse''` needs to be "primed" with an empty list, and
-then gradually accumulates the solution, which we obtain at the end of the 
-recursion. 
+-- we'll need to pass values into subsequent iterations to track progress
+fibs :: [Integer]
+fibs = = undefined
+\end{code}
 
-So that the caller doesn't need to provide the priming value, accumulators are
-typically hidden inside where clauses:
 
-> reverse''' :: [a] -> [a]
-> reverse''' xs = rev xs []
->   where rev = undefined
+B. Filtering (conditional iteration/reduction)
 
-Try doing ":set +s" in ghci, then comparing outputs for the following:
+Filtering is the process of iterating over a list and processing only those elements that satisfy a given condition. 
 
-  - take 5 $ reverse'   [1..1000000]
-  - take 5 $ reverse''' [1..1000000]
+\begin{code}
+-- sum only the positive numbers in a list
+sumPositives :: Integral a => [a] -> a
+sumPositives [] = 0
+sumPositives = undefined
 
----
 
-We say that a function like `reverse'''`, where the solution to the problem is
-obtained at the end of the recursion instead of being computed on the way "up"
-out of a recursion, is *tail recursive*.
+-- palindroms are strings that read the same forwards as backwards
+palindromes :: [String] -> [String]
+palindromes [] = []
+palindromes = undefined
+\end{code}
 
-Sometimes tail recursion is good in Haskell, as it allows the function to be
-more efficient (as above). Sometimes, however, it works against us. 
 
-Consider a function that takes a value x and partitions an input list into two
-output lists: one containing values < x, and the other containing values >= x.
-Here we have two implementations --- one tail recursive and one not:
+C. Combinations & Permutations
 
-> tailPartition :: Ord a => a -> [a] -> ([a],[a])
-> tailPartition n xs = part xs ([],[])
->   where part [] r = r
->         part (y:ys) (lts,gts) | y < n     = part ys (y:lts, gts)
->                               | otherwise = part ys (lts, y:gts)
->
->
-> nontailPartition :: Ord a => a -> [a] -> ([a],[a])
-> nontailPartition n [] = ([],[])
-> nontailPartition n (x:xs) | x < n     = (x:lts, gts)
->                           | otherwise = (lts, x:gts)
->   where (lts, gts) = nontailPartition n xs
+Combinations and permutations are classic problems in combinatorics that arise 
+in many different problems.
 
-What happens when we call the two variations on an infinite list, but we only
-need to take a fixed number of values from a given partition?
+\begin{code}
+-- generate all combinations (order doesn't matter -- how many are there?)
+combinations :: [a] -> [[a]]
+combinations [] = [[]]
+combinations = undefined
 
-  - E.g., "take 5 $ snd $ XXXPartition 100 [1..]"
+
+-- generate all combinations of a given size (nCr = n!/(r!(n-r)!))
+combinations' :: Int -> [a] -> [[a]]
+combinations' = undefined
+
+
+-- the "making change" problem
+change :: (Ord a, Num a) => a -> [a] -> [[a]]
+change = undefined
+
+
+-- the knapsack problem: given a list of items (value,weight) and a weight 
+-- capacity, find the maximum value that can be carried
+knapsack :: (Ord a, Num a) => a -> [(a,a)] -> a
+knapsack = undefined
+
+
+-- find the actual set of items that maximizes value (under the weight cap)
+knapsack' :: (Ord a, Num a) => a -> [(a,a)] -> [(a,a)]
+knapsack' = undefined
+
+
+-- find the two closest points in a list of points (brute force)
+closestPoints :: (Ord a, Num a) => [(a,a)] -> [(a,a)]
+closestPoints = undefined
+
+
+-- generate all permutations (order matters -- how many are there?)
+permutations :: [a] -> [[a]]
+permutations = undefined
+
+
+-- generate all palindromes from a given string
+allPalindromes :: String -> [String]
+allPalindromes = undefined
+\end{code}
+
+
+D. Divide & Conquer
+
+Divide and conquer is a technique for solving problems by breaking them into
+smaller subproblems and then combining the solutions to the subproblems to
+obtain a solution to the original problem.
+
+\begin{code}
+-- a classic!
+fib :: Integral a => a -> a
+fib = undefined
+
+
+-- sort by splitting the list in half and merging the sorted halves
+mergesort :: Ord a => [a] -> [a]
+mergesort = undefined
+
+
+-- sort by choosing a pivot and "partitioning" the list around it
+quicksort :: Ord a => [a] -> [a]
+quicksort = undefined
+
+
+-- find the two closest points in a list of points (more efficiently)
+closestPoints' :: (Ord a, Num a) => [(a,a)] -> [(a,a)]
+closestPoints' = undefined
+\end{code}
+
+
+E. Tail recursion & Accumulation
+
+Tail recursion is a special case of recursion where the recursive call is the
+last thing done in the function.  In non-lazy languages, this is important
+because it allows the compiler to optimize the code by eliminating the need
+for a stack frame. In Haskell (and other lazy languages), tail recursion does 
+not quite have the same importance, but it is still a useful technique.
+
+Accumulation is a technique for solving problems by passing an extra
+parameter to the recursive call that accumulates the solution.
+
+\begin{code}
+-- are all elements even?
+allEven :: [Integer] -> Bool
+allEven = undefined
+
+
+-- are two lists the same length?
+sameLength :: [a] -> [b] -> Bool
+sameLength = undefined
+
+
+-- tail recursive factorial with explicit accumulator
+factorial' :: Integer -> Integer -> Integer
+factorial' = undefined
+
+
+-- tail recursive factorial with hidden accumulator
+factorial'' :: Integer -> Integer
+factorial'' = undefined
+
+
+-- reverse a list using an accumulator
+reverse' :: [a] -> [a]
+reverse' = undefined
+
+
+-- enumerate the integers from m to n (with an accumulator)
+enumFromTo' :: Integer -> Integer -> [Integer]
+enumFromTo' = undefined
+
+
+-- can we write the infinite list version using an accumulator?
+enumFrom' :: Integer -> [Integer]
+enumFrom' = undefined
+\end{code}
