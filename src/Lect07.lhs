@@ -4,7 +4,7 @@
 
 \begin{code}
 module Lect07 where
-import Prelude hiding (($), (.), flip, on, 
+import Prelude hiding (($), (.), flip, on, and,
                        map, filter, any, all, iterate, until,
                        foldr, foldl, foldr1, foldl1)
 import Data.Char
@@ -217,24 +217,24 @@ E.g.,
 Consider the recursive patterns found in:
 
 \begin{code}
-add :: (Num a) => [a] -> a
-add [] = 0
-add (x:xs) = (+) x $ product xs
+and :: [Bool] -> Bool
+and [] = True
+and (x:xs) = (&&) x $ and xs
 
 
-hash :: String -> Integer
-hash [] = 1307
-hash (c:cs) = h c $ hash cs
-  where h c r = fromIntegral (ord c) `xor` 7*r
+showCat :: Show a => [a] -> String
+showCat [] = ""
+showCat (x:xs) = ((++) . show) x $ showCat xs
 \end{code}
 
 
 What is the essential pattern here?
 
+
+
 Write the HOF that captures this pattern:
 
 \begin{code}
-foldr :: (a -> b -> b) -> b -> [a] -> b
 foldr = undefined
 \end{code}
 
@@ -249,12 +249,12 @@ E.g., trace the evaluation of `foldr (+) 0 [1..5]`:
 Let's define some recursive functions in terms of foldr:
 
 \begin{code}
-add' :: (Num a) => [a] -> a
-add' = undefined
+and' :: [Bool] -> Bool
+and' = undefined
 
 
-hash' :: String -> Integer
-hash' = undefined
+showCat' :: Show a => [a] -> String
+showCat' = undefined
 
 
 (+++) :: [a] -> [a] -> [a]
@@ -274,26 +274,66 @@ filter' p = undefined
 \end{code}
 
 
+Consider this traced version of `foldr`:
+
+\begin{code}
+foldrT :: (Show a, Show b) => (a -> b -> b) -> b -> [a] -> b
+foldrT _ v [] = v
+foldrT f v (x:xs) = let e  = trace ("<" ++ show x ++ ">") x
+                    in trace "R" $ f e $ foldrT f v xs
+\end{code}
+
+
+Experiment with the following to answer these questions:
+
+- In what order are the input list elements evaluated?
+
+- When are the combining functions applied?
+
+- Does the right fold work on infinite lists? Why or why not?
+
+- Is the intuition that the right fold "replaces" the empty list with the
+  base case value correct? Why or why not?
+
+\begin{verbatim}
+foldrT (+) 0 [1..10]
+
+foldrT (&&) True [True, False, True, False]
+
+foldrT (&&) undefined $ repeat False
+
+take 5 $ foldrT (:) [] [1..]
+
+take 5 $ foldrT ((++) . show) "" [1..]
+\end{verbatim}
+
+
+-------------------------------------------------------------------------------
+
+
 Consider the recursive patterns found in:
 
 \begin{code}
-pow :: (Integral a) => a -> [a] -> a
-pow r [] = r
-pow r (x:xs) = pow (r ^ x) xs
+hash :: Integer -> String -> Integer
+hash seed [] = seed
+hash seed (c:cs) = hash (h seed c) cs
+  where h v c = (7*v `xor` fromIntegral (ord c)) `mod` 1000007
 
 
-concatShow :: (Show a) => String -> [a] -> String
-concatShow r [] = r
-concatShow r (x:xs) = concatShow (r ++ show x) xs
+playMoves :: [Char] -> [(Int,Char)] -> [Char]
+playMoves board [] = board
+playMoves board (m:moves) = playMoves (move board m) moves
+  where move board (x,y) = take x board ++ [y] ++ drop (x+1) board
 \end{code}
 
 
 How is the pattern different from before?
 
+
+
 Write the HOF that captures this pattern:
 
 \begin{code}
-foldl :: (b -> a -> b) -> b -> [a] -> b
 foldl = undefined
 \end{code}
 
@@ -302,36 +342,52 @@ E.g., trace the evaluation of `foldl (+) 0 [1..5]`:
 
   foldl (+) 0 (1 : (2 : (3 : (4 : (5 : [])))))
 
-= 
+= ?
 
-Let's define some recursive functions in terms of foldr:
+
+Let's define some recursive functions in terms of foldl:
 
 \begin{code}
-pow' :: (Integral a) => [a] -> a
-pow' = undefined
+hash' :: String -> Integer
+hash' = undefined
 
-concatShow' :: (Show a) => [a] -> String
-concatShow' = undefined
 
-reverse' :: [a] -> [a]
-reverse' = undefined
+playMoves' :: [(Int,Char)] -> [Char]
+playMoves' = undefined
 \end{code}
 
 
-In what order do foldr and foldl evaluate their constituent functions? (The answer may surprise you!)
-
-Consider:
+Consider this traced version of `foldl`:
 
 \begin{code}
-foldrD :: Show a => (a -> b -> b) -> b -> [a] -> b
-foldrD _ v [] = v
-foldrD f v (x:xs) = traceShow x $ f x $ foldrD f v xs
-
-foldlD :: Show a => (b -> a -> b) -> b -> [a] -> b
-foldlD _ v [] = v
-foldlD f v (x:xs) = let e = traceShow x (f v x) 
-                    in foldlD f e xs
+foldlT :: (Show a, Show b) => (b -> a -> b) -> b -> [a] -> b
+foldlT _ v [] = v
+foldlT f v (x:xs) = let e  = trace ("<" ++ show x ++ ">") x
+                        a  = f v e
+                        a' = trace ("<<" ++ show a ++ ">>") a
+                    in trace "R" $ foldlT f a' xs
 \end{code}
+
+
+Experiment with the following to answer these questions:
+
+- In what order are the input list elements evaluated?
+
+- When is the combining function applied?
+
+- Does the left fold work on infinite lists? Why or why not?
+
+- How might we make the left fold more efficient?
+
+\begin{verbatim}
+foldlT (+) 0 [1..10]
+
+foldlT (&&) True [True, False, True, False]
+
+foldlT (&&) True $ repeat False
+
+take 3 $ foldlT (flip (:)) [] [1..10]
+\end{verbatim}
 
 
 We can force Haskell to be stricter by using `seq`, which has type:
@@ -342,15 +398,21 @@ We can force Haskell to be stricter by using `seq`, which has type:
 before evaluating the second argument (and returning a result). 
 
 
-Write a strict version of `foldl`:
+Write a stricter (traced) version of the left fold:
 
 \begin{code}
-foldlDS :: Show a => (b -> a -> b) -> b -> [a] -> b
-foldlDS = undefined
+foldlTS :: (Show a, Show b) => (b -> a -> b) -> b -> [a] -> b
+foldlTS = undefined
 \end{code}
 
+E.g., try `foldlTS (+) 0 [1..10]` and `foldlTS (flip (:)) [] [1..10]`
 
-Right folds can work with infinite lists; left folds can not! (Why?)
+How is this more efficient than the previous version? When is it arguably better than the right fold?
+
+
+-------------------------------------------------------------------------------
+
+When to fold left or right?
 
 
 Bonus HOFs
@@ -363,14 +425,17 @@ E.g.,
 
 \begin{code}
 foldr1 :: (a -> a -> a) -> [a] -> a
-foldr1 f (x:xs) = foldr f x xs
+foldr1 = undefined
 
 -- e.g., foldr1 (*) [1..5]
+--       foldr1 (^) [2,2,3]
+
 
 foldl1 :: (a -> a -> a) -> [a] -> a
-foldl1 f (x:xs) = foldl f x xs
+foldl1 = undefined
 
 -- e.g., foldl1 (++) [[1,2], [3,4], [5,6]]
+--       foldl1 (/) [16,2,4]
 \end{code}
 
 
