@@ -117,6 +117,7 @@ instance Functor Tree where
   fmap = undefined
 \end{code}
 
+
 Here's a `Show` instance that makes it easier to visualize trees and a few trees
 to play with:
 
@@ -186,6 +187,7 @@ in one Functor to a value in another Functor.
 \begin{code}
 class (Functor f) => Applicative f where
   pure :: a -> f a
+  
   infixl 4 <*>
   (<*>) :: f (a -> b) -> f a -> f b
 \end{code}
@@ -196,7 +198,10 @@ Let's make `Maybe` an Applicative instance:
 
 \begin{code}
 instance Applicative Maybe where
+  pure :: a -> Maybe a
   pure = undefined
+  
+  (<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
   (<*>) = undefined
 \end{code}
 
@@ -230,7 +235,10 @@ represent?
 
 \begin{code}
 instance Applicative [] where
+  pure :: a -> [a]
   pure = undefined
+  
+  (<*>) :: [a -> b] -> [a] -> [b]
   (<*>) = undefined
 \end{code}
 
@@ -254,10 +262,14 @@ Now we can make `NDList` an instance of Functor and Applicative:
 
 \begin{code}
 instance Functor NDList where
+  fmap :: (a -> b) -> NDList a -> NDList b
   fmap = undefined
 
 instance Applicative NDList where
+  pure :: a -> NDList a
   pure = undefined
+  
+  (<*>) :: NDList (a -> b) -> NDList a -> NDList b
   (<*>) = undefined
 \end{code}
 
@@ -281,7 +293,10 @@ We can also make a function an Applicative:
 
 \begin{code}
 instance Applicative ((->) a) where
+  pure :: b -> (a -> b)
   pure = undefined
+
+  (<*>) :: (a -> (b -> c)) -> (a -> b) -> (a -> c)
   (<*>) = undefined
 \end{code}
 
@@ -357,6 +372,7 @@ Let's make `Maybe` a Monad instance:
 
 \begin{code}
 instance Monad Maybe where
+  (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
   (>>=) = undefined
 \end{code}
 
