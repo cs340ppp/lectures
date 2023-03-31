@@ -16,7 +16,6 @@ Some Monads
 ===========
 
 Agenda:
-  - List
   - Logger
   - State
     - Monadic utility functions
@@ -24,54 +23,14 @@ Agenda:
   - Q/A
 
 
-List monad
-----------
-
-Recall that the built-in applicative instance of the list type uses the
-non-deterministic intepretation of the applicative `<*>` operator:
-
-\begin{code}
-noun_phrases = (++) <$> ["red ", "quick ", "fuzzy "] 
-                    <*> ["fox", "couch", "torpedo"]
-\end{code}
-
-
-The list monad instance is consistent with this interpretation:
-
-    instance Monad [] where
-      xs >>= f = concat [f x | x <- xs]
-
-
-What do the following evaluate to?
-
-    [1..10] >>= return
-
-    [1..10] >>= \x -> replicate x x
-
-    do x <- [1..10]
-       y <- "hello"
-       return (x,y)
-
-    do article <- ["The", "A", "This"]
-       adjective <- ["red", "quick", "fuzzy"]
-       noun <- ["fox", "couch", "torpedo"]
-       return $ article ++ " " ++ adjective ++ " " ++ noun
-
-
-In some cases the use of bind can be replaced with pure functions and the `<$>`
-and `<*>` operators. This is not always the case, though!
-
-
 Logger monad
 ------------
 
-The Logger monad is designed to provide a mechanism for attaching log messages
-to values and computations. The log messages are automatically (via the
-bind/sequence operators) combined and accumulated throughout sequences of
-monadic operations.
+The Logger monad provides a mechanism for attaching log messages to values and 
+computations. The log messages are automatically combined and accumulated 
+throughout sequences of monadic operations.
 
-We start by defining a type that encapsulates a polymorphic value and a list of
-log messages:
+A logger encapsulates a polymorphic value and a list of log messages:
 
 \begin{code}
 data Logger a = Logger {
@@ -81,36 +40,40 @@ data Logger a = Logger {
 \end{code}
 
 
-As a functor, we should be able to apply functions to the value in a `Logger`:
+Implement the Functor instance of Logger:
 
 \begin{code}
 instance Functor Logger where
+  fmap :: (a -> b) -> Logger a -> Logger b
   fmap = undefined
 \end{code}
 
 
-When combining `Logger` values as applicative instances, we should combine the
-log messages found in both `Logger`s:
+Implement the Applicative instance of Logger:
 
 \begin{code}
 instance Applicative Logger where
+  pure :: a -> Logger a
   pure = undefined
+  
+  (<*>) :: Logger (a -> b) -> Logger a -> Logger b
   (<*>) = undefined
 \end{code}
 
 
-Finally, let's define the monad instance:
+Implement the Monad instance of Logger:
 
 \begin{code}
 instance Monad Logger where
+  (>>=) :: Logger a -> (a -> Logger b) -> Logger b
   (>>=) = undefined
 \end{code}
 
 
-We need a few functions that produce `Logger` values:
+Here are some functions that produce Logger values:
 
 \begin{code}
-recordLog :: Show a => a -> String -> Logger a
+recordLog :: a -> String -> Logger a
 recordLog x s = Logger x [s]
 
 logVal :: Show a => a -> Logger a
@@ -118,13 +81,16 @@ logVal x = recordLog x $ "Got " ++ show x
  
 logOp :: Show a => String -> a -> Logger a
 logOp op x = recordLog x $ "Performing " ++ op ++ " => " ++ show x
+
+logAppend :: String -> Logger ()
+logAppend = recordLog ()
 \end{code}
 
 
-What do the following evaluate to?
+Make sure you understand how the following expressions are evaluated:
 
 \begin{code}
-logeg1 = return 5 >>= logVal
+logeg1 = logVal 5
 
 logeg2 = do
   a <- logVal 10
@@ -137,20 +103,7 @@ logeg3 = do
   c <- logOp "Sub" $ a - b
   d <- logOp "Square" $ c^2
   return d
-\end{code}
 
-
-We may want functions to operate purely on log messages:
-
-\begin{code}
-logAppend :: String -> Logger ()
-logAppend l = recordLog () l
-\end{code}
-
-
-What do the following evaluate to?
-
-\begin{code}
 logeg4 = do
   logAppend "Starting"
   logAppend "Revving up"
@@ -225,6 +178,7 @@ Start with Functor:
 
 \begin{code}
 instance Functor (State s) where
+  fmap :: (a -> b) -> State s a -> State s b
   fmap f st = undefined
 \end{code}
 
@@ -232,7 +186,10 @@ Then Applicative:
 
 \begin{code}
 instance Applicative (State s) where
+  pure :: a -> State s a
   pure = undefined
+  
+  (<*>) :: State s (a -> b) -> State s a -> State s b
   stf <*> stx = undefined
 \end{code}
 
@@ -240,6 +197,7 @@ And finally Monad:
 
 \begin{code}
 instance Monad (State s) where
+  (>>=) :: State s a -> (a -> State s b) -> State s b
   st >>= f = undefined
 \end{code}
 
@@ -274,14 +232,15 @@ put x y ((kv@(k,_)):kvs) | x == k = (k,y):kvs
 \end{code}
 
 
-We can write stateful functions that use them to store and update "variable" values:
+Let's write stateful functions that use get/put to model "variables":
 
 \begin{code}
-var_get :: String -> State [(String, a)] a
-var_get v = undefined
+var :: String -> State [(String, a)] a
+var v = undefined
 
-var_put :: String -> a -> State [(String, a)] ()
-var_put v x = undefined
+infixr 0 <==
+(<==) :: String -> a -> State [(String, a)] ()
+v <== x = undefined
 \end{code}
 
 
@@ -290,15 +249,15 @@ And now we can chain together what looks like a simple imperative program:
 \begin{code}
 quadRoots :: State [(String, Double)] (Double, Double)
 quadRoots = do
-  a <- var_get "a"
-  b <- var_get "b"
-  c <- var_get "c"
-  var_put "disc" $ b^2 - 4*a*c
-  disc <- var_get "disc"
-  var_put "r1" $ (-b - sqrt disc) / (2*a)
-  var_put "r2" $ (-b + sqrt disc) / (2*a)
-  r1 <- var_get "r1"
-  r2 <- var_get "r2"
+  a <- var "a"
+  b <- var "b"
+  c <- var "c"
+  "disc" <== b^2 - 4*a*c
+  disc <- var "disc"
+  "r1" <== (-b - sqrt disc) / (2*a)
+  "r2" <== (-b + sqrt disc) / (2*a)
+  r1 <- var "r1"
+  r2 <- var "r2"
   return (r1, r2)
 \end{code}
 
