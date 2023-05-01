@@ -3,6 +3,7 @@
 % Michael Lee
 
 \begin{code}
+{-# LANGUAGE FlexibleInstances, InstanceSigs #-}
 module Lect09 where
 import Prelude hiding (Functor, fmap, (<$>),
                        Applicative, pure, (<*>),

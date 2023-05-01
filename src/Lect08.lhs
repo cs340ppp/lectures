@@ -3,7 +3,7 @@
 % Michael Lee
 
 \begin{code}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, InstanceSigs #-}
 module Lect08 where
 import Prelude hiding (Word, Maybe, Just, Nothing, Either, Left, Right)
 import Data.Char

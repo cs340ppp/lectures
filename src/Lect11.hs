@@ -2,6 +2,8 @@
 -- Lect 11 - Monadic Parsing
 -- Michael Lee
 
+{-# LANGUAGE InstanceSigs #-}
+
 module Lect11 where
 import Prelude hiding (fail)
 import Data.Char

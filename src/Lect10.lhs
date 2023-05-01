@@ -3,6 +3,7 @@
 % Michael Lee
 
 \begin{code}
+{-# LANGUAGE FlexibleInstances, InstanceSigs #-}
 module Lect10 where
 import Prelude hiding (sequence, sequence_, mapM, mapM_, 
                        forM, forM_, interact)
