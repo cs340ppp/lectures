@@ -248,12 +248,13 @@ pathFindingSpec = describe "Path finding solution" $ do
   let start = head testLocs; end = last testLocs
   let ?epsilon = 0.01
   describe "distance" $ do
-    it "works on examples" $ do
+    it "computes distances" $ do
       distance (Loc "" (0,0)) (Loc "" (5,0)) @?= 5
       distance (Loc "" (0,0)) (Loc "C" (1,2)) @?~ sqrt 5
       distance start end @?~ 12.72
+
   describe "within" $ do
-    it "works on examples" $ do
+    it "locates reachable locs" $ do
       within 3 start testLocs `shouldBe` [Loc "C" (1,2)]
       within 4 start testLocs `shouldMatchList` [Loc "C" (1,2), 
                                                  Loc "F" (3,1)]
@@ -261,44 +262,78 @@ pathFindingSpec = describe "Path finding solution" $ do
                                                  Loc "C" (1,2),
                                                  Loc "D" (1,4),
                                                  Loc "F" (3,1)]
+
   describe "extendPath" $ do
-    it "works for example 1" $ do
+    it "extends a single-loc path by one loc" $ do
       let startPath = Path 0 [start]
       let ps = extendPath 3 testLocs startPath
       length ps @?= 1
       pathDist (head ps) @?~ 2.23
-      map locName (pathLocs (head ps)) `shouldMatchList` ["A", "C"]
-    it "works for example 2" $ do
+      map locName (pathLocs (head ps)) `shouldBe` ["C", "A"]
+
+    it "extends a single-loc path by two locs" $ do
       let startPath = Path 0 [start]
       let ps = extendPath 4 testLocs startPath
       length ps @?= 2
+      map pathDist ps `shouldMatchListApprox` [2.23, 3.16]
+      map (map locName . pathLocs) ps `shouldMatchList` [["C", "A"], 
+                                                         ["F", "A"]]
+
+    it "extends a two-loc (non-zero length) path" $ do
+      let startPath = Path 3 [Loc "C" (1,2), start]
+      let ps = extendPath 4 testLocs startPath
+      length ps @?= 2
+      map pathDist ps `shouldMatchListApprox` [5, 5.23]
+      map (map locName . pathLocs) ps `shouldMatchList` [["D", "C", "A"], 
+                                                         ["F", "C", "A"]]
+
+    it "extends a three-loc path to all remaining locs (giant hop)" $ do
+      let startPath = Path 5 [Loc "D" (1,4), Loc "C" (1,2), start]
+      let ps = extendPath 50 testLocs startPath
+      length ps @?= 11
+      let names = map (map locName . pathLocs) ps
+      concat (map head names) `shouldMatchList` "BEFGHIJKLMN"
 
   describe "findPath" $ do
     it "finds no solution with hop length <= 3" $ do
       findPath 1 testLocs (head testLocs) (last testLocs) @?= Nothing
       findPath 2 testLocs (head testLocs) (last testLocs) @?= Nothing
       findPath 3 testLocs (head testLocs) (last testLocs) @?= Nothing
+
     it "finds the correct solution with hop length = 4" $ do 
       let p = findPath 4 testLocs start end
       p `shouldSatisfy` isJust
       let Just p' = p
       pathDist p' @?~ 13.83
       map locName (pathLocs p') `shouldBe` ["N","J","G","D","C","A"]
+
     it "finds the correct solution with hop length = 5" $ do 
       let p = findPath 5 testLocs start end
       p `shouldSatisfy` isJust
       let Just p' = p
       pathDist p' @?~ 13.22
       map locName (pathLocs p') `shouldBe` ["N","J","G","C","A"]
+
     it "finds the correct solution with hop length = 6" $ do 
       let p = findPath 6 testLocs start end
       p `shouldSatisfy` isJust
       let Just p' = p
       pathDist p' @?~ 13.06
       map locName (pathLocs p') `shouldBe` ["N","G","C","A"]
+      
     it "finds the correct solution with hop length = 7" $ do 
       let p = findPath 7 testLocs start end
       p `shouldSatisfy` isJust
       let Just p' = p
       pathDist p' @?~ 12.80
       map locName (pathLocs p') `shouldBe` ["N","I","A"]
+
+
+shouldMatchListApprox :: (Show a, Ord a, Fractional a, ?epsilon :: a) => 
+                         [a] -> [a] -> Assertion
+shouldMatchListApprox xs ys = 
+  let xs' = sort xs
+      ys' = sort ys
+  in and (zipWith (\x y -> abs (x - y) < ?epsilon) xs' ys') @? 
+     ("expected: " ++ show xs ++ "\n but got: " ++ show ys)
+                               
