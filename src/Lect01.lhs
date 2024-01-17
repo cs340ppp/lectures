@@ -46,6 +46,8 @@ do your work in this class. They include:
 
 - GitHub, a Git hosting service
 
+- GHCUp, an installer for Haskell development tools
+
 - GHC, the Glasgow Haskell Compiler
 
 - Stack, a Haskell build tool

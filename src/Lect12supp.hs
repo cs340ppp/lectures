@@ -7,6 +7,7 @@ import Data.List
 import Data.List.Split
 import Data.Array
 import System.Random
+import Control.Monad
 import Control.Monad.State
 import System.IO
 import System.Console.ANSI
