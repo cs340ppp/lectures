@@ -10,6 +10,7 @@ import Prelude hiding (sequence, sequence_, mapM, mapM_,
 import Data.Char
 import Data.List
 import Data.Maybe
+import Data.List.Split (endBy)
 \end{code}
 
 
@@ -154,12 +155,13 @@ peek = undefined
 
 We can now run these operations like so on input lists:
 
-    runState pop [1..10]
+\begin{verbatim}
+  runState pop [1..10]
 
-    runState (push 5) [1..10]
+  runState (push 5) [1..10]
 
-    runState peek [1..10]
-
+  runState peek [1..10]
+\end{verbatim}
 
 More intriguingly, we can chain them, like this:
 
@@ -183,6 +185,13 @@ instance Functor (State s) where
   fmap f st = undefined
 \end{code}
 
+What does the following do?
+
+\begin{verbatim}
+  runState (even <$> pop) [1..10]
+\end{verbatim}
+
+
 Then Applicative:
 
 \begin{code}
@@ -194,6 +203,19 @@ instance Applicative (State s) where
   stf <*> stx = undefined
 \end{code}
 
+What do the following do?
+
+\begin{verbatim}
+  runState (pure 5) [1..10]
+
+  runState (pure even <*> pure 5) [1..10]
+
+  runState (pure even <*> pop) [1..10]
+
+  runState ((+) <$> pop <*> pop) [1..10]
+\end{verbatim}
+
+
 And finally Monad:
 
 \begin{code}
@@ -202,8 +224,20 @@ instance Monad (State s) where
   st >>= f = undefined
 \end{code}
 
+What do the following do?
 
-Here's how we can use the State monad to chain together stack operations:
+\begin{verbatim}
+  runState (pop >>= \x -> push (2+x)) [1..10]
+  
+  runState (peek >>= \x -> push (2+x)) [1..10]
+
+  runState (pop >>= \_ -> pop >>= \_ -> pop) [1..10]
+
+  runState (pop >> pop >> pop) [1..10]
+\end{verbatim}
+
+
+Here's an example of using do notation to chain together stack operations:
 
 \begin{code}
 stackArith :: State [Int] ()
@@ -228,7 +262,7 @@ get x ((k,v):kvs) | x == k = v
 
 put :: Eq a => a -> b -> [(a,b)] -> [(a,b)]
 put x y [] = [(x,y)]
-put x y ((kv@(k,_)):kvs) | x == k = (k,y):kvs
+put x y (kv@(k,_):kvs) | x == k = (k,y):kvs
                          | otherwise = kv : put x y kvs
 \end{code}
 
@@ -244,8 +278,22 @@ infixr 0 <==
 v <== x = undefined
 \end{code}
 
+What do the following do?
 
-And now we can chain together what looks like a simple imperative program:
+\begin{verbatim}
+  runState ("a" <== 10) []
+
+  runState (("a" <== 10) >> var "a") []
+
+  runState (var "a" >>= \x -> "b" <== x*2) [("a", 10)]
+
+  do x <- var "foo"
+     y <- var "bar"
+     "baz" <== x + y
+\end{verbatim}
+
+
+And now we can write what looks like a simple imperative function:
 
 \begin{code}
 quadRoots :: State [(String, Double)] (Double, Double)
@@ -495,11 +543,6 @@ Q: But if an otherwise pure function extracts the value from an IO action and
    uses it in a computation, doesn't that make the function effectively
    stateful?
 
-   E.g., is there any way to not return the result in an IO action?
-
-       foo :: (a -> b) -> IO a -> IO b
-       foo f m = f <$> m   
-
 Q: Couldn't lazy evaluation wreak havoc on programs that perform IO? E.g., if a
    program reads three different values from a file, but lazy evaluation causes
    the last read to be evaluated before the first two, the program would likely
@@ -507,15 +550,3 @@ Q: Couldn't lazy evaluation wreak havoc on programs that perform IO? E.g., if a
 
 Q: Do all monads impose strictly sequential evaluation, and thereby prevent
    us from taking advantage of Haskell's laziness?
-
-   E.g., is `baz` strictly evaluated?
-
-       foo :: State Int Int
-       foo = State undefined
-      
-       bar :: Int -> State Int Int
-       bar _ = State $ \_ -> (1,2)
-      
-       baz = do x <- foo
-                y <- bar x
-                return y
