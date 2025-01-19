@@ -1,5 +1,4 @@
-Setup & Installation Instructions
----------------------------------
+# Setup & Installation Instructions
 
 ## Overview
 
@@ -75,7 +74,7 @@ To load a specific lecture's (e.g., lecture 1) source file, run the following co
 
 We recommend using [Visual Studio Code](https://code.visualstudio.com/) as your editor. It is a free, open-source editor that is easy to use and has a large community of users. It is also the editor that the course staff uses.
 
-To install Visual Studio Code, download and run the installer from [https://code.visualstudio.com/](https://code.visualstudio.com/). 
+To install Visual Studio Code, download and run the installer from [https://code.visualstudio.com/](https://code.visualstudio.com/).
 
 After installing and opening Visual Studio Code, go to the Extensions tab (on the left side of the window) and search for extension named "Haskell". Install the extension by clicking the "Install" button.
 
