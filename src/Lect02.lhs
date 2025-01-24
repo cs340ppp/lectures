@@ -24,15 +24,9 @@ Agenda:
 Types
 -----
 
-A *type* defines a **collection of values**
+- What is a *type*?
 
-  - `e :: T` means that expression `e` (when evaluated) has type `T`
-
-  - all type names start with a capital letter
-
-Haskell has a small number of builtin types, and the "Prelude" module (which is
-imported by default into all Haskell source files) defines other standard types and associated functions.
-
+- How do we indicate the type of an expression in Haskell?
 
 Basic types
 -----------
@@ -45,8 +39,6 @@ Basic types
   - Double  - 64-bit IEEE double-precision floating point number
   - Tuple   - finite (i.e., of a given arity) sequence of zero or more types
 
-(At GHCi, we can use `:t` to ask for the type of any expression.)
-
 What are the types of the following?
 
     True
@@ -58,13 +50,12 @@ What are the types of the following?
     (True)
     (1, 2, 3, True)
 
-
 Function types
 --------------
 
-A function is a mapping from one type (the domain) to another type (the range).
+- How would we describe a function in terms of types?
 
-For a function that maps type T1 to type T2, we specify its type as `T1 -> T2`
+- How do we specify function types in Haskell?
 
 What are the types of the following functions?
 
@@ -74,17 +65,10 @@ What are the types of the following functions?
     ord
     chr
 
-
 Function application
 --------------------
 
-Function application simply requires placing a space between a function name and
-its argument(s), e.g.,
-
-    not True
-
-    isDigit '9'
-
+What is the syntax for function application in Haskell?
 
 Functions of multiple arguments
 -------------------------------
@@ -99,19 +83,19 @@ E.g., interpret the following functions that map from a `Bool` and a `Char` to a
 
     foo3 :: Bool -> Char -> Int
 
-
 Functions of multiple arguments in Haskell are "curried". 
 
   - What does this mean?
-  - What does this say about the associativity of `->`?
-  - What does this say about the associativey of function application?
-  - What happens if we "partially apply" a function of multiple arguments?
 
+  - What does this say about the associativity of `->`?
+
+  - What does this say about the associativity of function application?
+
+  - What happens if we "partially apply" a function of multiple arguments?
 
 Aside: what about:
 
     foo4 :: (Bool -> Char) -> Int
-
 
 "Operators"
 -----------
@@ -143,14 +127,9 @@ Operators are just functions whose names start with non-letters, and are used
 Polymorphic functions
 ---------------------
 
-Some functions don't care about the specific types of some args/return values. 
+- What are polymorphic functions?
 
-  - Their types change (morph) based on the given types of their arguments
-  
-  - We call these *polymorphic functions*
-  
-  - We use *type variables* in their type declarations
-
+- What do their type declarations look like?
 
 Check out these polymorphic functions? Can you guess what they do?
   
@@ -159,8 +138,7 @@ Check out these polymorphic functions? Can you guess what they do?
       fst
       snd
       .
-      flip
-  
+      flip 
 
 The type declaration of a polymorphic function can give a lot of information about what the function does! (Why?)
 
@@ -168,18 +146,9 @@ The type declaration of a polymorphic function can give a lot of information abo
 Type Classes (aka Classes)
 --------------------------
 
-Just as a type is a collection of related values, a type *class* is a collection of related types. 
+- What is a type class?
 
-  - A type class defines functions (known as "methods") supported by all 
-    instances (i.e., types) belonging to the class
-
-  - A type can be an instance of multiple classes
-
-  - Classes can inherit from other classes
-
-  - You can get information about a class at GHCi using `:i`
-
-      - This will list the class's methods and instances of the class
+- What information is specified by a type class?
 
 Check out these classes and their methods:
 
@@ -191,11 +160,12 @@ Check out these classes and their methods:
     Bounded
     Show
 
-
 Class constraints
 -----------------
 
-Polymorphic function type declarations can include *class constraints* for type variables. The constrained type variables must be instances of specific classes.
+- What is a class constraint?
+
+- Why are class constraints useful?
 
 Inspect and explain the type declarations for:
 
