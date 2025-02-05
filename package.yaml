@@ -29,6 +29,10 @@ dependencies:
 - random-shuffle
 - containers
 - ansi-terminal
+- filepath
+- template-haskell
+- shake
+- Glob
 
 ghc-options: []
 
@@ -39,8 +43,8 @@ library:
     other-modules: Paths_cs340
 
 executables:
-  cs340-exe:
-    main:                Main.hs
+  hello:
+    main:                hello.hs
     source-dirs:         app
     ghc-options:
     - -threaded
@@ -48,9 +52,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - cs340
-    when:
-    - condition: false
-      other-modules: Paths_cs340
+
+  myunlit:
+    main:                myunlit.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs340
 
 tests:
   cs340-test:
