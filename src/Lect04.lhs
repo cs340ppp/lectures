@@ -26,22 +26,11 @@ Haskell's built-in list type might be defined something like this:
 
     [a] = [] | a : [a]
 
-Read as: a list of type 'a' ([a]) is either an empty list ([]) or 
-         value of type 'a' followed by ':' and a list of type 'a' ([a]).
+- How should we interpret this?
 
-Takeaways: 
-  - a list is defined recursively, i.e., in terms of itself
-  - the list type is polymorphic
-  - lists are homogeneous (all elements of a given list are of the same type)
+- What are some ramifications of this definition?
 
-
-`[]` and `:` are examples of value constructors (aka data constructors)
-
-  - we call `:` the "cons" operator -- it is right-associative, and has type:
-
-    (:) :: a -> [a] -> [a]
-
-Try using `[]` and `:` to build some lists.
+- Try using `[]` and `:` to build some lists.
 
 
 Syntactic sugar
@@ -49,30 +38,13 @@ Syntactic sugar
 
 Instead of constructing lists with `:`, there is syntactic sugar:
 
-E.g., for simple itemized lists, [...]
+- basic itemized lists: [1,2,3,4,5]
 
-    [1,2,3,4,5,6,7,8,9,10]   ==  1:2:3:4:5:6:7:8:9:10:[] 
+- strings, aka lists of Chars: "hello world"
 
-E.g., for lists of characters (string), "...":
+- arithmetic sequences: [i..j], [i,j..k]
 
-    "hello world"       ==  'h':'e':'l':'l':'o':[]
-
-E.g., for instances of `Enum`, [I..J] and [I,J..K] and [I..]; try:
-
-    [1..10]
-
-    ['a'..'z']
-
-    [2,4..10]
-    
-    [10,9..1]
-
-
-E.g., for infinite lists of `Enum`, [I..] and [I,J..]
-
-    [1..]    ==  enumFrom 1
-
-    [3,6..]  ==  enumFromThen 3 6
+- infinite sequences: [i..], [i,j..]
 
 
 Constructing lists
@@ -107,7 +79,6 @@ E.g., implement the following list construction functions:
 > enumFrom' :: Enum a => a -> [a]
 > enumFrom' = undefined
 
-
 Note: use `take` to limit the number of values drawn from an infinite list
 
 
@@ -117,14 +88,6 @@ List comprehensions
 Syntax:
 
   [ Expression | Generator, ... , Predicate, ... ]
-
-  - which produces a list of values computed by `Expression`
-
-  - where each `Generator` is of the form "var <- List"
-
-  - and each `Predicate` is a Boolean expression
-
-  - you can also use `let` to create local vars (without `in`)
 
 E.g.,
 
