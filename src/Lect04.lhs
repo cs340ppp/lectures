@@ -210,20 +210,16 @@ E.g., implement more built-in functions:
 > last' = undefined
 >
 >
-> (+++) :: [a] -> [a] -> [a]
-> (+++) = undefined
->
->
-> (!!!) :: [a] -> Int -> a -- the ! in its name is an implicit warning as to its inefficiency!
-> (!!!) = undefined
->
->
-> reverse' :: [a] -> [a]
-> reverse' = undefined
->
->
 > take' :: Int -> [a] -> [a]
 > take' = undefined
+>
+>
+> drop' :: Int -> [a] -> [a]
+> drop' = undefined
+>
+>
+> (!!!) :: [a] -> Int -> a 
+> (!!!) = undefined
 >
 >
 > splitAt' :: Int -> [a] -> ([a], [a])
