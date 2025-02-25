@@ -1,9 +1,10 @@
 resolver: lts-21.25
 packages:
-- .
+  - .
 
 extra-deps:
-- test-invariant-0.4.5.0
+  - memoize-1.1.2
+  - test-invariant-0.4.5.0
 
 system-ghc: true
 
