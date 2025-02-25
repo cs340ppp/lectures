@@ -52,10 +52,6 @@ palindromes = undefined
 C. Accumulation (Computing/Passing information "down" while recursing)
 
 \begin{code}
--- count even numbers
-countEvens :: Integral a => [a] -> Int
-countEvens = undefined
-
 -- reverse a list
 reverse' :: [a] -> [a]
 reverse' = undefined
@@ -69,8 +65,9 @@ D. Combinations & Permutations (Essential combinatorics)
 combinations :: [a] -> [[a]]
 combinations = undefined
 
--- the knapsack problem: given a list of items (value,weight) and a weight 
--- capacity, find the maximum value that can be carried
+-- knapsack problem: given a list of items (value,weight) and a weight 
+--                   capacity, find the maximum value that can be carried
+-- e.g., knapsack 10 [(60,6), (90,8), (50,2), (40,2)] = 150
 knapsack :: (Ord a, Num a) => a -> [(a,a)] -> a
 knapsack = undefined
 
@@ -87,8 +84,8 @@ allPalindromes = undefined
 E. Divide & Conquer (Break a problem into smaller ones of the same structure)
 
 \begin{code}
--- a classic!
-fib :: Integral a => a -> a
+-- another classic!
+fib :: Int -> Integer
 fib = undefined
 
 -- sort by splitting the list in half and merging the sorted halves
@@ -100,6 +97,12 @@ mergesort = undefined
 F. Generative recursion (Generates new subproblems (in size/structure))
 
 \begin{code}
-newtonSqrt :: Double -> Double -> Double
-newtonSqrt = undefined
+-- Newton's method for finding square roots
+-- 1. Start with a guess g -- for sqrt x, try g=x/2
+-- 2. Is g^2 = x?
+--    - if so, we're done
+-- 3. Improve the guess; g'=(g + x/g)/2
+--    (if g is too low this will increase it, and vice versa)
+sqrt' :: Double -> Double
+sqrt' = undefined
 \end{code}
