@@ -1,75 +1,76 @@
-name:                cs340
-version:             0.1.0.0
-github:              "cs340ppp/lectures"
-license:             MIT
-author:              "Michael Lee"
-maintainer:          "lee@iit.edu"
-copyright:           "2023 Michael Lee"
+name: cs340
+version: 0.1.0.0
+github: "cs340ppp/lectures"
+license: MIT
+author: "Michael Lee"
+maintainer: "lee@iit.edu"
+copyright: "2023 Michael Lee"
 
 extra-source-files:
-- README.md
-- INSTALL.md
+  - README.md
+  - INSTALL.md
 
-description:         See <https://github.com/cs340ppp/lectures#readme>
+description: See <https://github.com/cs340ppp/lectures#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- text
-- split
-- bytestring
-- hspec
-- HUnit
-- HUnit-approx
-- QuickCheck
-- test-invariant
-- mtl
-- array
-- deepseq
-- random
-- random-shuffle
-- containers
-- ansi-terminal
-- filepath
-- template-haskell
-- shake
-- Glob
+  - base >= 4.7 && < 5
+  - text
+  - split
+  - bytestring
+  - hspec
+  - HUnit
+  - HUnit-approx
+  - QuickCheck
+  - test-invariant
+  - mtl
+  - array
+  - deepseq
+  - memoize
+  - random
+  - random-shuffle
+  - containers
+  - ansi-terminal
+  - filepath
+  - template-haskell
+  - shake
+  - Glob
 
 ghc-options: []
 
 library:
   source-dirs: src
   when:
-  - condition: false
-    other-modules: Paths_cs340
+    - condition: false
+      other-modules: Paths_cs340
 
 executables:
   hello:
-    main:                hello.hs
-    source-dirs:         app
+    main: hello.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - cs340
+      - cs340
 
   myunlit:
-    main:                myunlit.hs
-    source-dirs:         app
+    main: myunlit.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - cs340
+      - cs340
 
 tests:
   cs340-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - cs340
+      - cs340
