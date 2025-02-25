@@ -6,7 +6,7 @@
 module Lect06 where
 import Data.List (nub)
 import Debug.Trace
-import qualified Data.Set as Set
+import Data.Function.Memoize
 \end{code}
 
 Recursion
@@ -14,12 +14,13 @@ Recursion
 
 Agenda:
 
-  - Some common patterns of recursion:
-     A. Iteration & Reduction
-     B. Filtering
-     C. Accumulation
-     D. Combinations & Permutations
-     E. Divide & Conquer
+- Common patterns of recursion:
+  A. Iteration & Reduction
+  B. Filtering
+  C. Accumulation
+  D. Combinations & Permutations
+  E. Divide & Conquer
+  F. Generative recursion
 
 
 A. Iteration & Reduction (Processing elements one by one)
