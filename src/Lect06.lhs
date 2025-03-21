@@ -43,7 +43,6 @@ B. Filtering (Selective iteration/reduction)
 sumPositives :: Integral a => [a] -> a
 sumPositives = undefined
 
-
 -- palindroms are strings that read the same forwards as backwards
 palindromes :: [String] -> [String]
 palindromes = undefined
