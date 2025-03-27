@@ -58,10 +58,10 @@ area (Rectangle l w) = l*w
 
 -- Counting values (sums & products)
 
-data T1 = T1V1 | T1V2 | T1V3
-data T2 = T2V1 Bool | T2V2 T1
-data T3 = T3V Bool T1
-data T4 = T4V1 T1 T2 | T4V2 T2 T3
+data T1 = T1V1 | T1V2 | T1V3      deriving Show
+data T2 = T2V1 Bool | T2V2 T1     deriving Show
+data T3 = T3V Bool T1             deriving Show
+data T4 = T4V1 T1 T2 | T4V2 T2 T3 deriving Show
 
 -- Record notation
 
@@ -97,24 +97,24 @@ innerMostMessage (Doll _ d)         = innerMostMessage d
 
 -- Parametric types
 
-data UBox a = Box' a deriving Show
+data UniversalBox a = UBox a deriving Show
 
-ub1 :: UBox Bool
-ub1 = Box' True
+ub1 :: UniversalBox Bool
+ub1 = UBox True
 
-ub2 :: UBox [Int]
-ub2 = Box' [1..10]
+ub2 :: UniversalBox [Int]
+ub2 = UBox [1..10]
 
-ub3 :: UBox (Int -> Bool)
-ub3 = Box' even
+ub3 :: UniversalBox (Int -> Bool)
+ub3 = UBox even
 
-mapBox :: (a -> b) -> UBox a -> UBox b
-mapBox f (Box' x) = Box' $ f x
+mapBox :: (a -> b) -> UniversalBox a -> UniversalBox b
+mapBox f (UBox x) = UBox $ f x
 
-sumBoxes :: Num a => [UBox a] -> UBox a
-sumBoxes [] = Box' 0
-sumBoxes (Box' n : bs) = let Box' ns = sumBoxes bs 
-                        in Box' $ n + ns
+sumBoxes :: Num a => [UniversalBox a] -> UniversalBox a
+sumBoxes [] = UBox 0
+sumBoxes (UBox n : bs) = let UBox ns = sumBoxes bs 
+                         in UBox $ n + ns
 
 -- kinds of types
              

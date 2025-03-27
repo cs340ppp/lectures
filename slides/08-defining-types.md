@@ -309,25 +309,26 @@ as *parametric* (or *parameterized*) types.
 E.g., a "universal" box type:
 
 ```haskell
-data UBox a = Box a
+data UniversalBox a = UBox a
 ```
 
-The type name, `UBox`, is not itself a full type specification. It takes another
-type as a parameter to specialize it; we therefore call it a *type constructor*.
+The type name, `UniversalBox`, is not itself a full type specification. It takes
+another type as a parameter to specialize it; we therefore call it a *type
+constructor*.
 
 <!-- pause -->
 
-E.g., here are some `UBox` values:
+E.g., here are some `UniversalBox` values:
 
 ```haskell
-ub1 :: UBox Bool
-ub1 = Box True
+ub1 :: UniversalBox Bool
+ub1 = UBox True
 
-ub2 :: UBox [Int]
-ub2 = Box [1..10]
+ub2 :: UniversalBox [Int]
+ub2 = UBox [1..10]
 
-ub3 :: UBox (Int -> Bool)
-ub3 = Box even
+ub3 :: UniversalBox (Int -> Bool)
+ub3 = UBox even
 ```
 
 ---
@@ -337,13 +338,13 @@ ub3 = Box even
 E.g., some functions on `UniversalBox` values:
 
 ```haskell
-mapBox :: (a -> b) -> UBox a -> UBox b
-mapBox f (Box x) = Box $ f x
+mapBox :: (a -> b) -> UniversalBox a -> UniversalBox b
+mapBox f (UBox x) = UBox $ f x
 
-sumBoxes :: Num a => [UBox a] -> UBox a
-sumBoxes [] = Box 0
-sumBoxes (Box n : bs) = let Box ns = sumBoxes bs 
-                        in Box $ n + ns
+sumBoxes :: Num a => [UniversalBox a] -> UniversalBox a
+sumBoxes [] = UBox 0
+sumBoxes (UBox n : bs) = let UBox ns = sumBoxes bs 
+                         in UBox $ n + ns
 ```
 
 ---
