@@ -1,10 +1,6 @@
-% CS 340: Programming Paradigms and Patterns
-% Lect 10 - Some Monads
-% Michael Lee
-
 \begin{code}
 {-# LANGUAGE FlexibleInstances, InstanceSigs #-}
-module Lect10 where
+module Lect11 where
 import Prelude hiding (sequence, sequence_, mapM, mapM_, 
                        forM, forM_, interact)
 import Data.Char
