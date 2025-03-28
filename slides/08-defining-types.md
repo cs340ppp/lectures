@@ -93,6 +93,8 @@ constructor* (aka *data constructor*)
 data TypeName = Constructor1 | Constructor2 | ... | ConstructorN
 ```
 
+<!-- pause -->
+
 Each constructor can take arguments, which describe the types of values that
 must be passed to the constructor when calling it.
 
@@ -136,6 +138,8 @@ A `Box` value is built of an `Int`, `Bool`, and `String`.
 data Box = Box Int Bool String
 ```
 
+<!-- pause -->
+
 - The name of the type (`Box`) and value constructor (`Box`) are identical.
 
   - No ambiguity; they are always used in different contexts!
@@ -176,6 +180,8 @@ data Shape = Circle Double
              | Triangle Double Double 
              | Rectangle Double Double
 ```
+
+<!-- pause -->
 
 Compute the area of a shape:
 
@@ -248,11 +254,15 @@ data Student = Student { firstName :: String
                        , grades    :: [Char] }
 ```
 
+<!-- pause -->
+
 We can still create values with fields specified positionally:
 
 ```haskell
 s1 = Student "John" "Doe" 1234 ['A', 'B']
 ```
+
+<!-- pause -->
 
 Or we can specify fields by name (order doesn't matter):
 
@@ -262,6 +272,8 @@ s2 = Student { lastName = "Doe"
              , grades = ['A', 'C']
              , studentId = 2345 }
 ```
+
+<!-- pause -->
 
 We also get a shortcut for creating a new value from another:
 
@@ -279,6 +291,8 @@ How would you interpret the following type?
 data RussianDoll = Doll String RussianDoll | EmptyDoll
 ```
 
+<!-- pause -->
+
 Here are some `RussianDoll` values:
 
 ```haskell
@@ -287,6 +301,8 @@ d2 = Doll "privyet" EmptyDoll
 d3 = Doll "matry" (Doll "osh" (Doll "ka" EmptyDoll))
 d4 = Doll "infinity, and beyond!" d4
 ```
+
+<!-- pause -->
 
 Write a function to return the message in the innermost non-empty doll:
 
@@ -391,20 +407,16 @@ A `Maybe a` represents either an `a` value or the *absence of an `a` value*.
 data Maybe a = Just a | Nothing
 ```
 
+<!-- pause -->
+
 This gives us a well-typed mechanism for returning a value from a function that
 represents a result or the *lack of a result* (e.g., a failed computation).
+
+<!-- pause -->
 
 E.g., consider:
 
 ```haskell
-quadRoots :: Double -> Double -> Double -> Maybe (Double,Double)
-quadRoots a b c = let d = b^2-4*a*c
-                      sd = sqrt d
-                  in if d < 0
-                     then Nothing
-                     else Just ((-b+sd)/(2*a), (-b-sd)/(2*a))
-
-
 find :: (a -> Bool) -> [a] -> Maybe a
 find _ [] = Nothing
 find p (x:xs) | p x = Just x
@@ -420,6 +432,8 @@ find p (x:xs) | p x = Just x
 ```haskell
 data Either a b = Left a | Right b
 ```
+
+<!-- pause -->
 
 We typically use the `Left` constructor to represent error values, and the
 `Right` constructor to hold correct (*right*) values.
@@ -444,6 +458,8 @@ infixr 5 :-
 data List a = a :- (List a) | Null
 ```
 
+<!-- pause -->
+
 Here are some lists:
 
 ```haskell
@@ -454,17 +470,11 @@ l2 :: List (List Int)
 l2 = (1 :- 2 :- Null) :- (3 :- 4 :- Null) :- Null
 ```
 
-And some list functions!
+<!-- pause -->
+
+And here's a map for our list!
 
 ```haskell
-enumFromL :: (Eq a, Enum a) => a -> List a
-enumFromL m = m :- enumFromL (succ m)
-
-takeL :: Int -> List a -> List a
-takeL 0 _    = Null
-takeL _ Null = Null
-takeL n (x :- xs) = x :- takeL (n-1) xs
-
 mapL :: (a -> b) -> List a -> List b
 mapL _ Null = Null
 mapL f (x :- xs) = f x :- mapL f xs
