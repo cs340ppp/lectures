@@ -317,8 +317,8 @@ innerMostMessage (Doll _ d)         = innerMostMessage d
 
 # Parametric types
 
-A type definition can depend on one or more type variables. Such types are known
-as *parametric* (or *parameterized*) types.
+A type definition can depend on one or more type variables. Such types are
+called *parametric* (or *parameterized*) types.
 
 <!-- pause -->
 
@@ -329,7 +329,7 @@ data UniversalBox a = UBox a
 ```
 
 The type name, `UniversalBox`, is not itself a full type specification. It takes
-another type as a parameter to specialize it; we therefore call it a *type
+another type as an argument to specialize it; we therefore call it a *type
 constructor*.
 
 <!-- pause -->
@@ -347,20 +347,13 @@ ub3 :: UniversalBox (Int -> Bool)
 ub3 = UBox even
 ```
 
----
+<!-- pause -->
 
-# Parametric types
-
-E.g., some functions on `UniversalBox` values:
+Here's a map-style HOF for a `UniversalBox`:
 
 ```haskell
 mapBox :: (a -> b) -> UniversalBox a -> UniversalBox b
 mapBox f (UBox x) = UBox $ f x
-
-sumBoxes :: Num a => [UniversalBox a] -> UniversalBox a
-sumBoxes [] = UBox 0
-sumBoxes (UBox n : bs) = let UBox ns = sumBoxes bs 
-                         in UBox $ n + ns
 ```
 
 ---
