@@ -90,7 +90,7 @@ enumerate xs = zip [1..] xs
 constructor* (aka *data constructor*)
 
 ```haskell
-data TypeName = Constructor1 | Constructor2 | ... | ConstructorN
+data TypeName = Constructor1 | Constructor2 | ...
 ```
 
 <!-- pause -->
@@ -99,7 +99,9 @@ Each constructor can take arguments, which describe the types of values that
 must be passed to the constructor when calling it.
 
 ```haskell
-data TypeName = Constructor1 ArgType1 | Constructor2 ArgType1 ArgType2 | ...
+data TypeName = Constructor1 ArgType1
+              | Constructor2 ArgType1 ArgType2
+              | ...
 ```
 
 ---
@@ -329,8 +331,7 @@ data UniversalBox a = UBox a
 ```
 
 The type name, `UniversalBox`, is not itself a full type specification. It takes
-another type as an argument to specialize it; we therefore call it a *type
-constructor*.
+type as an argument to specialize it; we therefore call it a *type constructor*.
 
 <!-- pause -->
 
