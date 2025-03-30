@@ -1,6 +1,7 @@
 ---
-title: Introduction to Haskell
-author: Michael lee <lee@iit.edu>
+title: "Introduction to Haskell"
+sub_title: "CS 340: Programming Patterns and Paradigms"
+author: "Michael lee <lee@iit.edu>"
 ---
 
 # Agenda

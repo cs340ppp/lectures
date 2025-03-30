@@ -1,6 +1,7 @@
 ---
-title: Defining and Using Type Classes
-author: Michael Lee
+title: "Defining and Using Type Classes"
+sub_title: "CS 340: Programming Patterns and Paradigms"
+author: "Michael Lee <lee@iit.edu>"
 ---
 
 # Agenda
@@ -282,4 +283,5 @@ data Suit = Diamond | Club | Heart | Spade
             deriving (Eq, Ord, Enum, Bounded, Show, Read)
 ```
 
-- what methods do we get?
+- Play around with this type in GHCi to see what behavior we get for free!
+  (`:i`-ing the classes will help)

@@ -1,6 +1,7 @@
 ---
-title: Defining Types
-author: Michael Lee
+title: "Defining Types"
+sub_title: "CS 340: Programming Patterns and Paradigms"
+author: "Michael Lee <lee@iit.edu>"
 ---
 
 # Agenda
