@@ -72,7 +72,7 @@ explode [1..5] -- > [[1],[2],[3],[4],[5]]
 
 ## As a class constraint
 
-We can use `Explosive` as a class constraint for polymorphic functions now:
+We can use `Explosive` as a class constraint for polymorphic functions:
 
 ```haskell
 mapExploded :: Explosive a => (a -> b) -> a -> [b]
@@ -138,6 +138,8 @@ class Eq a where
 
 ## `Student` instance
 
+Can you make the `Student` type an instance of `Eq`?
+
 ```haskell
 data Student = Student {
                , firstName :: String
@@ -162,6 +164,8 @@ instance Eq Student where
 # Example: `Eq`
 
 ## `List` instance
+
+How would you make `List` an instance of `Eq`?
 
 ```haskell
 data List a = a :- (List a) | Null
@@ -208,9 +212,12 @@ class Eq a => Ord a where
     min x y = if x <= y then x else y
 ```
 
+<!-- pause -->
+
 - `Eq a => Ord a` means `Eq` is the *superclass* of `Ord`
   - `Ord` inherits all methods of `Eq`
   - All instances of `Ord` must also be instances of `Eq`
+  - A type class can have multiple superclasses!
 
 - A minimal instance only needs to implement `compare` or `<=`
 
@@ -223,7 +230,8 @@ class Eq a => Ord a where
 ```haskell
 instance Ord Student where
   compare :: Student -> Student -> Ordering
-  compare (Student _ _ id1 _) (Student _ _ id2 _) = compare id1 id2
+  compare (Student _ _ id1 _) (Student _ _ id2 _)
+      = compare id1 id2
 ```
 
 ---
