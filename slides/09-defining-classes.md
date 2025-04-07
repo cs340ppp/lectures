@@ -62,8 +62,8 @@ instance Explosive [a] where
 And now we can do:
 
 ```haskell
-explode 5 -- > [1,2,3,4,5]
-explode [1..5] -- > [[1],[2],[3],[4],[5]]
+explode 5  ==  [1,2,3,4,5]
+explode [1..5]  ==  [[1],[2],[3],[4],[5]]
 ```
 
 ---
@@ -84,8 +84,8 @@ mapExploded f x = map f $ explode x
 And `mapExploded` will work for all `Explosive` types!
 
 ```haskell
-mapExploded even 5 -- > [False,True,False,True,False]
-mapExploded length [1..5] -- > [1,1,1,1,1]
+mapExploded even 5  ==  [False,True,False,True,False]
+mapExploded length [1..5]  ==  [1,1,1,1,1]
 ```
 
 ---
@@ -109,8 +109,8 @@ class Explosive a where
 - instances get the defaults "for free", but may override them
 
 ```haskell
-explode 5 -- > [1,2,3,4,5]
-explodeTwice 5 -- >  [[1],[1,2],[1,2,3],[1,2,3,4],[1,2,3,4,5]]
+explode 5  ==  [1,2,3,4,5]
+explodeTwice 5  ==  [[1],[1,2],[1,2,3],[1,2,3,4],[1,2,3,4,5]]
 ```
 
 ---
