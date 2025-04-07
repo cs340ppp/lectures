@@ -57,7 +57,7 @@ class Functor f where
 
 <!-- pause -->
 
-```mermaid
+```mermaid +render +width:80%
 flowchart LR
     subgraph fmap[ ]
       fn{{fn :: a -> b}} -- fmap --> val
@@ -265,7 +265,7 @@ But what if the functions are themselves boxed?
 
 <!-- pause -->
 
-```mermaid
+```mermaid +render +width:60%
 flowchart LR
     subgraph box1[Functor]
         fn{{fn :: a -> b}}
@@ -302,7 +302,7 @@ class Functor f => Applicative f where
 
 <!-- pause -->
 
-```mermaid
+```mermaid +render +width:100%
 flowchart LR
     pfn{{fn :: a -> b}} ==>|pure| box1
     
@@ -354,13 +354,13 @@ instance Applicative Maybe where
 Consider:
 
 ```haskell
-pure (2*) <*> pure 5
+pure 42 :: Maybe Int
 
-pure ("hello" ++ ) <*> Just "world"
+pure (3*) <*> Just 7
 
-(*) <$> Just 2 <*> Just 5
+(*) <$> Just 3 <*> Just 7
 
-(\x y z -> x++y++z) <$> Just "hello" <*> Just "hola" <*> Just "hi"
+(\x y z -> x+y*z) <$> Just 2 <*> Just 3 <*> Just 4
 ```
 
 <!-- pause -->
@@ -368,9 +368,9 @@ pure ("hello" ++ ) <*> Just "world"
 What happens if any of the values are `Nothing`?
 
 ```haskell
-(*) <$> Nothing <*> Just 5
+(*) <$> Nothing <*> Just 7
 
-(\x y z -> x++y++z) <$> Just "hello" <*> Nothing <*> Just "hi"
+(\x y z -> x+y*z) <$> Just 2 <*> Nothing <*> Just 4
 ```
 
 ---
@@ -700,7 +700,7 @@ working with the results (and ignoring failure/success).
 
 Here's a (slightly simplified) visual:
 
-```mermaid
+```mermaid +render +width:100%
 flowchart LR
     sd1{{safeDiv}} ==> m1
 
