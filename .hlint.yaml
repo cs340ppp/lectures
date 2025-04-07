@@ -31,6 +31,8 @@
 - ignore: {name: "Use lambda-case"} # 1 hint
 - ignore: {name: "Use tuple-section"} # 2 hints
 - ignore: {name: "Used otherwise as a pattern"} # 1 hint
+- ignore: {name: "Use replicateM"} # 1 hint
+- ignore: {name: "Use mapM"} # 1 hint
 
 # Specify additional command line arguments
 #
