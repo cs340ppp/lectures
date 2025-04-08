@@ -847,6 +847,34 @@ guess n = do putStr "Enter a guess: "
 
 # IO
 
+## I/O and `IO`
+
+In a compiled Haskell program, the *only way to perform I/O* is to sequence an
+`IO` monad from the `main` function (directly or indirectly). This is because
+`main` is the only function to receive a `RealWorld` value.
+
+<!-- pause -->
+
+Any function that performs I/O must return an `IO` monad. Arbitrary functions
+*cannot* perform I/O!
+
+<!-- pause -->
+
+Consider:
+
+```haskell
+foo :: Int
+foo = let _ = putStrLn "hello world!"
+      in 42
+```
+
+Does `foo` manage to "secretly" perform output in a pure function? Why or why
+not?
+
+---
+
+# IO
+
 ## Exception handling
 
 If an exception occurs while performing I/O, an `IOError` is available in the
