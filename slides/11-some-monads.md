@@ -370,6 +370,92 @@ runState stackFoo [2,4,3,5]  ==  ((), [23])
 
 ---
 
+# State
+
+## Random numbers
+
+The `System.Random` module defines a class with methods that return
+*pseudo-random* values for its instances (which include `Char`, `Integer`,
+`Double`, etc.):
+
+```haskell
+class Random a where
+  random   :: RandomGen g => g -> (a, g)
+  randomR  :: RandomGen g => (a, a) -> g -> (a, g)
+```
+
+<!-- pause -->
+
+`RandomGen` is a class that describes methods for a *pseudo-random number
+generator* (PRNG). We can obtain a value of `StdGen`, which is an instance of
+`RandomGen`, by passing an integer *seed* to:
+
+```haskell
+mkStdGen :: Int -> StdGen
+```
+
+<!-- pause -->
+
+Here's how we can generate a random number in the range [0,100]. We get back a
+value and a PRNG with an updated seed to use for additional random values.
+
+```haskell
+randomR (0,100) $ mkStdGen 1  ==  (27, StdGen ...)
+```
+
+---
+
+# State
+
+## Random numbers
+
+To get multiple random numbers, we could manually sequence the PRNGs:
+
+```haskell
+let g        = mkStdGen 1
+    (r1,g')  = randomR (0,100) g
+    (r2,g'') = randomR (0,100) g'
+    (r3,_)   = randomR (0,100) g''
+in (r1,r2,r3)                         ==  (27,98,35)
+```
+
+<!-- pause -->
+
+But this pattern of sequencing computations while carrying through updated state
+is a perfect application for the `State` monad!
+
+---
+
+# State
+
+## Random numbers
+
+These functions build `State` monads which use `StdGen`s as their internal
+state.
+
+```haskell
+randInRange :: (Int,Int) -> State StdGen Int
+randInRange bounds = State $ randomR bounds
+
+nRands :: Int -> (Int,Int) -> State StdGen [Int]
+nRands 0 _      = return []
+nRands n bounds = do x <- randInRange bounds
+                     xs <- nRands (n-1) bounds
+                     return (x:xs)
+```
+
+<!-- pause -->
+
+So we can do:
+
+```haskell
+runState (nRands 5 (0,100)) (mkStdGen 1)
+
+    == ([27,98,35,87,7], StdGen ...)
+```
+
+---
+
 # Parser
 
 A *parser* is a stateful computation that takes as its input state a string, and

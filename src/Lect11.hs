@@ -5,6 +5,7 @@ import Prelude hiding (fail)
 import Data.Char
 import Control.Exception
 import Control.Monad hiding (fail)
+import System.Random
 
 -- Logger
 
@@ -83,6 +84,17 @@ stackFoo = do w <- pop
               z <- pop
               let yz = y * z
               push $ wx + yz
+
+-- Random numbers
+
+randInRange :: (Int,Int) -> State StdGen Int
+randInRange bounds = State $ randomR bounds
+
+nRands :: Int -> (Int,Int) -> State StdGen [Int]
+nRands 0 _ = return []
+nRands n bounds = do x <- randInRange bounds
+                     xs <- nRands (n-1) bounds
+                     return (x:xs)
 
 -- Parser
 
