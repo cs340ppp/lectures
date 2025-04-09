@@ -101,29 +101,31 @@ nRands n bounds = do x <- randInRange bounds
 data Parser a = Parser { parse :: String -> Maybe (a, String) }
 
 instance Functor Parser where
-  fmap f p = Parser $ \s -> case parse p s
-                              of Nothing     -> Nothing
-                                 Just (x,s') -> Just (f x,s')
+  fmap f p = Parser $ \s -> case parse p s of
+                              Nothing     -> Nothing
+                              Just (x,s') -> Just (f x,s')
 
 instance Applicative Parser where
   pure x = Parser $ \s -> Just (x,s)
 
-  pf <*> px = Parser $ \s -> case parse pf s
-                               of Nothing     -> Nothing
-                                  Just (f,s') -> parse (f <$> px) s'
+  pf <*> px = Parser $ \s -> case parse pf s of
+                               Nothing     -> Nothing
+                               Just (f,s') -> parse (f <$> px) s'
 
 instance Monad Parser where
-  px >>= f = Parser $ \s -> case parse px s
-                              of Nothing     -> Nothing
-                                 Just (x,s') -> parse (f x) s'
+  px >>= f = Parser $ \s -> case parse px s of
+                              Nothing     -> Nothing
+                              Just (x,s') -> parse (f x) s'
 
 char :: Parser Char
-char = Parser $ \s -> case s of "" -> Nothing
+char = Parser $ \s -> case s of ""     -> Nothing
                                 (c:cs) -> Just (c,cs)
 
 sat :: (Char -> Bool) -> Parser Char
 sat p = do c <- char
-           if p c then return c else fail
+           if p c
+           then return c
+           else fail
 
 fail :: Parser a
 fail = Parser $ \s -> Nothing
@@ -137,9 +139,9 @@ string (x:xs) = do sat (== x)
 
 infixr 2 <|>
 (<|>) :: Parser a -> Parser a -> Parser a
-p <|> q = Parser $ \s -> case parse p s
-                           of Nothing -> parse q s
-                              Just x -> Just x
+p <|> q = Parser $ \s -> case parse p s of
+                           Nothing -> parse q s
+                           Just x -> Just x
 
 oneOrMore :: Parser a -> Parser [a]
 oneOrMore p = do x <- p 
@@ -198,18 +200,18 @@ main = do name <- getLine
 guess :: Int -> IO ()
 guess n = do putStr "Enter a guess: "
              g <- readLn
-             case compare g n
-               of LT -> putStrLn "Too small!" >> guess n
-                  GT -> putStrLn "Too big!"   >> guess n
-                  _  -> putStrLn "Good guess!"
+             case compare g n of
+               LT -> putStrLn "Too small!" >> guess n
+               GT -> putStrLn "Too big!"   >> guess n
+               _  -> putStrLn "Good guess!"
 
 guess' :: Int -> IO ()
 guess' n = do putStr "Enter a guess: "
               g <- catch readLn handler
-              case compare g n
-                of LT -> putStrLn "Too small!" >> guess' n
-                   GT -> putStrLn "Too big!"   >> guess' n
-                   _  -> putStrLn "Good guess!"
+              case compare g n of
+                LT -> putStrLn "Too small!" >> guess' n
+                GT -> putStrLn "Too big!"   >> guess' n
+                _  -> putStrLn "Good guess!"
  where handler e = do putStrLn $ show (e :: IOError)
                       return 0
 

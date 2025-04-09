@@ -520,9 +520,9 @@ To assist with running multiple parsers *in sequence*, we should define a
 ```haskell
 instance Monad Parser where
   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  px >>= f = Parser $ \s -> case parse px s
-                              of Nothing     -> Nothing
-                                   Just (x,s') -> parse (f x) s'
+  px >>= f = Parser $ \s -> case parse px s of
+                              Nothing     -> Nothing
+                              Just (x,s') -> parse (f x) s'
 ```
 
 Can you see the similarity to the `State` monad?
@@ -608,9 +608,9 @@ We can implement some utility functions that combine parsers:
 
 ```haskell
 (<|>) :: Parser a -> Parser a -> Parser a
-p <|> q = Parser $ \s -> case parse p s
-                           of Nothing -> parse q s
-                              Just x  -> Just x
+p <|> q = Parser $ \s -> case parse p s of
+                           Nothing -> parse q s
+                           Just x  -> Just x
 
 oneOrMore :: Parser a -> Parser [a]
 oneOrMore p = do x <- p 
@@ -837,10 +837,10 @@ getLine >>= \s -> putStrLn ("Hi, " ++ s)
 
 guess n = do putStr "Enter a guess: "
              g <- readLn
-             case compare g n
-               of LT -> putStrLn "Too small!" >> guess n
-                  GT -> putStrLn "Too big!"   >> guess n
-                  _  -> putStrLn "Spot on!"
+             case compare g n of
+               LT -> putStrLn "Too small!" >> guess n
+               GT -> putStrLn "Too big!"   >> guess n
+               _  -> putStrLn "Spot on!"
 ```
 
 ---
@@ -891,10 +891,10 @@ We can use it like this:
 ```haskell
 guess' n = do putStr "Enter a guess: "
               g <- catch readLn handler
-              case compare g n
-                of LT -> putStrLn "Too small!" >> guess' n
-                   GT -> putStrLn "Too big!"   >> guess' n
-                   _  -> putStrLn "Spot on!"
+              case compare g n of
+                LT -> putStrLn "Too small!" >> guess' n
+                GT -> putStrLn "Too big!"   >> guess' n
+                _  -> putStrLn "Spot on!"
  where handler e = do putStrLn $ show (e :: IOError)
                       return 0
 ```
