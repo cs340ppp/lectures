@@ -824,7 +824,7 @@ do m
 desugars into:
 
 ```haskell
-m >>= rest
+m >> rest
 ```
 
 <!-- pause -->
