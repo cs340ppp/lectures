@@ -133,7 +133,7 @@ instance Applicative Logger where
   pure x = ?
 
   (<*>) :: Logger (a -> b) -> Logger a -> Logger b
-  (Logger f l1) <*> (Logger x l2) = ?
+  Logger f l1 <*> Logger x l2 = ?
 ```
 
 Such that:
@@ -160,7 +160,7 @@ Can you implement the `Logger` Monad instance?
 ```haskell
 instance Monad Logger where
   (>>=) :: Logger a -> (a -> Logger b) -> Logger b
-  (Logger x l) >>= f = ?
+  Logger x l >>= f = ?
 ```
 
 Such that:
@@ -323,7 +323,7 @@ Can you implement the `State` Applicative instance?
 ```haskell
 instance Applicative (State s) where
   pure x = State $ \s -> (x, s)
-  (State stf) <*> (State stx) = undefined
+  State stf <*> State stx = undefined
 ```
 
 Such that:
@@ -347,7 +347,7 @@ Can you implement the `State` Monad?
 
 ```haskell
 instance Monad (State s) where
-  (State st) >>= f = undefined
+  State st >>= f = undefined
 ```
 
 <!-- pause -->
@@ -520,12 +520,12 @@ To assist with running multiple parsers *in sequence*, we should define a
 ```haskell
 instance Monad Parser where
   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  (Parser p) >>= f = Parser $ \s -> case p s of
-                                     Nothing     -> Nothing
-                                     Just (x,s') -> parse (f x) s'
+  Parser p >>= f = Parser $ \s -> case p s of
+                                    Nothing     -> Nothing
+                                    Just (x,s') -> parse (f x) s'
 
   -- or equivalently (since Maybe is a Monad)
-  (Parser p) >>= f = Parser $ \s -> do (x, s') <- p s
+  Parser p >>= f = Parser $ \s -> do (x, s') <- p s
                                        parse (f x) s'
 ```
 

@@ -22,11 +22,11 @@ instance Applicative Logger where
   pure x = Logger x []
 
   (<*>) :: Logger (a -> b) -> Logger a -> Logger b
-  (Logger f l1) <*> (Logger x l2) = undefined
+  Logger f l1 <*> Logger x l2 = undefined
 
 instance Monad Logger where
   (>>=) :: Logger a -> (a -> Logger b) -> Logger b
-  (Logger x l) >>= f = undefined
+  Logger x l >>= f = undefined
 
 logVal :: Show a => a -> Logger a
 logVal x = Logger x ["Got " ++ show x]
@@ -62,11 +62,11 @@ instance Applicative (State s) where
   pure x = State $ \s -> (x, s)
 
   (<*>) :: State s (a -> b) -> State s a -> State s b
-  (State stf) <*> (State stx) = undefined
+  State stf <*> State stx = undefined
 
 instance Monad (State s) where
   (>>=) :: State s a -> (a -> State s b) -> State s b
-  (State st) >>= f = undefined
+  State st >>= f = undefined
 
 stackFoo :: State [Int] ()
 stackFoo = do w <- pop
@@ -99,13 +99,13 @@ instance Functor Parser where
 instance Applicative Parser where
   pure x = Parser $ \s -> Just (x,s)
 
-  (Parser pf) <*> (Parser px)= Parser $ \s -> do
+  Parser pf <*> Parser px= Parser $ \s -> do
     (f, s') <- pf s
     (x, s'') <- px s'
     return (f x, s'')
 
 instance Monad Parser where
-  (Parser p) >>= f = Parser $ \s -> do
+  Parser p >>= f = Parser $ \s -> do
     (x, s') <- p s
     parse (f x) s' 
 
