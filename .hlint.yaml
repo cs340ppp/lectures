@@ -15,6 +15,7 @@
 - ignore: {name: "Redundant return"} # 2 hints
 - ignore: {name: "Use >>"} # 1 hint
 - ignore: {name: "Use <$>"} # 1 hint
+- ignore: {name: "Use first"} # 1 hint
 - ignore: {name: "Use and"} # 1 hint
 - ignore: {name: "Use camelCase"} # 2 hints
 - ignore: {name: "Use concatMap"} # 5 hints

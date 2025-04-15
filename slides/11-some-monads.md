@@ -187,10 +187,10 @@ we can write some functions that produce `Logger`s:
 
 ```haskell
 logVal :: Show a => a -> Logger a
-logVal x = Logger x ["Set " ++ show x]
+logVal x = Logger x ["Got " ++ show x]
 
-logOp :: Show a => a -> String -> Logger a
-logOp x op = Logger x ["Op " ++ op ++ " => " ++ show x]
+logOp :: Show a => String -> a -> Logger a
+logOp op x = Logger x [op ++ " => " ++ show x]
 ```
 
 <!-- pause -->
@@ -291,8 +291,8 @@ stateful computation. To do this requires that we run the stateful computation!
 ```haskell
 instance Functor (State s) where
   fmap :: (a -> b) -> State s a -> State s b
-  fmap f st = State $ \s -> let (x, s') = runState st s
-                            in (f x, s')
+  fmap f (State st) = State $ \s -> let (x, s') = st s
+                                    in (f x, s')
 ```
 
 This should remind you of function composition!
@@ -323,7 +323,7 @@ Can you implement the `State` Applicative instance?
 ```haskell
 instance Applicative (State s) where
   pure x = State $ \s -> (x, s)
-  stf <*> stx = ?
+  (State stf) <*> (State stx) = undefined
 ```
 
 Such that:
@@ -347,7 +347,7 @@ Can you implement the `State` Monad?
 
 ```haskell
 instance Monad (State s) where
-  st >>= f = ?
+  (State st) >>= f = undefined
 ```
 
 <!-- pause -->
@@ -520,12 +520,16 @@ To assist with running multiple parsers *in sequence*, we should define a
 ```haskell
 instance Monad Parser where
   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  px >>= f = Parser $ \s -> case parse px s of
-                              Nothing     -> Nothing
-                              Just (x,s') -> parse (f x) s'
+  (Parser p) >>= f = Parser $ \s -> case p s of
+                                     Nothing     -> Nothing
+                                     Just (x,s') -> parse (f x) s'
+
+  -- or equivalently (since Maybe is a Monad)
+  (Parser p) >>= f = Parser $ \s -> do (x, s') <- p s
+                                       parse (f x) s'
 ```
 
-Can you see the similarity to the `State` monad?
+Can you see the relationship to the `State` monad?
 
 <!-- pause -->
 

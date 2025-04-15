@@ -17,7 +17,6 @@ instance Functor Logger where
   fmap :: (a -> b) -> Logger a -> Logger b
   fmap f (Logger x l) = Logger (f x) l
 
-
 instance Applicative Logger where
   pure :: a -> Logger a
   pure x = Logger x []
@@ -25,12 +24,9 @@ instance Applicative Logger where
   (<*>) :: Logger (a -> b) -> Logger a -> Logger b
   (Logger f l1) <*> (Logger x l2) = undefined
 
-
 instance Monad Logger where
   (>>=) :: Logger a -> (a -> Logger b) -> Logger b
   (Logger x l) >>= f = undefined
-
-
 
 logVal :: Show a => a -> Logger a
 logVal x = Logger x ["Got " ++ show x]
@@ -38,11 +34,7 @@ logVal x = Logger x ["Got " ++ show x]
 logOp :: Show a => String -> a -> Logger a
 logOp op x = Logger x [op ++ " => " ++ show x]
 
-logAppend :: String -> Logger ()
-logAppend m = Logger () [m]
-
-log_eg = do logAppend "Start"
-            x <- logVal 1
+log_eg = do x <- logVal 1
             y <- logOp "Add 20" $ x + 20
             z <- logOp "Double" $ 2 * y
             return z
@@ -62,19 +54,19 @@ peek = undefined
 
 instance Functor (State s) where
   fmap :: (a -> b) -> State s a -> State s b
-  fmap f st = State $ \s -> let (x, s') = runState st s
-                            in (f x, s')
+  fmap f (State st) = State $ \s -> let (x, s') = st s
+                                    in (f x, s')
 
 instance Applicative (State s) where
   pure :: a -> State s a
   pure x = State $ \s -> (x, s)
 
   (<*>) :: State s (a -> b) -> State s a -> State s b
-  stf <*> stx = undefined
+  (State stf) <*> (State stx) = undefined
 
 instance Monad (State s) where
   (>>=) :: State s a -> (a -> State s b) -> State s b
-  st >>= f = undefined
+  (State st) >>= f = undefined
 
 stackFoo :: State [Int] ()
 stackFoo = do w <- pop
@@ -101,21 +93,21 @@ nRands n bounds = do x <- randInRange bounds
 data Parser a = Parser { parse :: String -> Maybe (a, String) }
 
 instance Functor Parser where
-  fmap f p = Parser $ \s -> case parse p s of
-                              Nothing     -> Nothing
-                              Just (x,s') -> Just (f x,s')
+  fmap f (Parser p) = Parser $ \s ->
+    fmap (\(x, s') -> (f x, s')) (p s) 
 
 instance Applicative Parser where
   pure x = Parser $ \s -> Just (x,s)
 
-  pf <*> px = Parser $ \s -> case parse pf s of
-                               Nothing     -> Nothing
-                               Just (f,s') -> parse (f <$> px) s'
+  (Parser pf) <*> (Parser px)= Parser $ \s -> do
+    (f, s') <- pf s
+    (x, s'') <- px s'
+    return (f x, s'')
 
 instance Monad Parser where
-  px >>= f = Parser $ \s -> case parse px s of
-                              Nothing     -> Nothing
-                              Just (x,s') -> parse (f x) s'
+  (Parser p) >>= f = Parser $ \s -> do
+    (x, s') <- p s
+    parse (f x) s' 
 
 char :: Parser Char
 char = Parser $ \s -> case s of ""     -> Nothing
@@ -129,7 +121,6 @@ sat p = do c <- char
 
 fail :: Parser a
 fail = Parser $ \s -> Nothing
-
 
 string :: String -> Parser String
 string "" = return ""
@@ -169,7 +160,6 @@ symbol s = token (string s)
 data Expr = Lit Int | Par Expr | Add Expr Expr | Sub Expr Expr 
             deriving Show
 
-
 expr :: Parser Expr
 expr = do t1 <- term
           op <- sat (== '+') <|> sat (== '-')
@@ -195,7 +185,6 @@ evalString s = undefined
 main :: IO ()
 main = do name <- getLine
           putStrLn $ "Hello, " ++ name
-
 
 guess :: Int -> IO ()
 guess n = do putStr "Enter a guess: "
