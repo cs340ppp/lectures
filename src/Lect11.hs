@@ -3,6 +3,7 @@
 module Lect11 where
 import Prelude hiding (fail)
 import Data.Char
+import Control.Applicative
 import Control.Exception
 import Control.Monad hiding (fail)
 import System.Random
@@ -88,121 +89,55 @@ nRands n bounds = do x <- randInRange bounds
                      xs <- nRands (n-1) bounds
                      return (x:xs)
 
--- Parser
+-- General get/put for reading/updating state
 
-data Parser a = Parser { parse :: String -> Maybe (a, String) }
+get :: State s s
+get = State $ \s -> (s, s)
 
-instance Functor Parser where
-  fmap f (Parser p) = Parser $ \s ->
-    fmap (\(x, s') -> (f x, s')) (p s) 
+put :: a -> State a ()
+put s = State $ \_ -> ((), s)
 
-instance Applicative Parser where
-  pure x = Parser $ \s -> Just (x,s)
+tick :: State Int ()
+tick = do i <- get
+          put (i+1)
 
-  Parser pf <*> Parser px= Parser $ \s -> do
-    (f, s') <- pf s
-    (x, s'') <- px s'
-    return (f x, s'')
+statefulComp :: State Int (Int,Int)
+statefulComp = do i <- get
+                  tick
+                  tick
+                  tick
+                  i' <- get
+                  return (i, i')
 
-instance Monad Parser where
-  Parser p >>= f = Parser $ \s -> do
-    (x, s') <- p s
-    parse (f x) s' 
+-- newtype
 
-char :: Parser Char
-char = Parser $ \s -> case s of ""     -> Nothing
-                                (c:cs) -> Just (c,cs)
+newtype LoudInt  = Loud Int
+newtype QuietInt = Quiet Int
 
-sat :: (Char -> Bool) -> Parser Char
-sat p = do c <- char
-           if p c
-           then return c
-           else fail
+instance Show LoudInt where
+  show (Loud i) = "<<" ++ show (i-1) ++ "+" ++ "1>>"
 
-fail :: Parser a
-fail = Parser $ \s -> Nothing
-
-string :: String -> Parser String
-string "" = return ""
-string (x:xs) = do sat (== x)
-                   string xs
-                   return (x:xs)
-
-infixr 2 <|>
-(<|>) :: Parser a -> Parser a -> Parser a
-p <|> q = Parser $ \s -> case parse p s of
-                           Nothing -> parse q s
-                           Just x -> Just x
-
-oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = do x <- p 
-                 xs <- oneOrMore p <|> return []
-                 return $ x:xs
-
-zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = oneOrMore p <|> return []
-
-int :: Parser Int
-int = do cs <- oneOrMore (sat isDigit)
-         return (read cs)
-
-token :: Parser a -> Parser a
-token p = do zeroOrMore $ sat isSpace
-             x <- p
-             zeroOrMore $ sat isSpace
-             return x
-
-symbol :: String -> Parser String
-symbol s = token (string s)
-
--- Expression parser
-
-data Expr = Lit Int | Par Expr | Add Expr Expr | Sub Expr Expr 
-            deriving Show
-
-expr :: Parser Expr
-expr = do t1 <- term
-          op <- sat (== '+') <|> sat (== '-')
-          t2 <- term
-          return $ (if op == '+' then Add else Sub) t1 t2
-       <|>
-       term
-
-term :: Parser Expr
-term = undefined
-
-eval :: Expr -> Int
-eval (Lit i) = i
-eval (Par e) = eval e
-eval (Add e1 e2) = eval e1 + eval e2
-eval (Sub e1 e2) = eval e1 - eval e2
-
-evalString :: String -> Maybe Int
-evalString s = undefined
+instance Show QuietInt where
+  show (Quiet i) = "(" ++ show i ++ ")"
 
 -- IO
 
-main :: IO ()
-main = do name <- getLine
-          putStrLn $ "Hello, " ++ name
-
 guess :: Int -> IO ()
 guess n = do putStr "Enter a guess: "
-             g <- readLn
-             case compare g n of
-               LT -> putStrLn "Too small!" >> guess n
-               GT -> putStrLn "Too big!"   >> guess n
-               _  -> putStrLn "Good guess!"
-
-guess' :: Int -> IO ()
-guess' n = do putStr "Enter a guess: "
-              g <- catch readLn handler
-              case compare g n of
-                LT -> putStrLn "Too small!" >> guess' n
-                GT -> putStrLn "Too big!"   >> guess' n
-                _  -> putStrLn "Good guess!"
- where handler e = do putStrLn $ show (e :: IOError)
-                      return 0
+             input <- getLine
+             case reads input of -- reads tries to parse Int from input
+               [(g,"")] -> do
+                 if g < n then do
+                   putStrLn "Too small!"
+                   guess n
+                 else if g > n then do
+                   putStrLn "Too big!"
+                   guess n
+                 else
+                   putStrLn "Good guess!"
+               _ -> do -- parse failure
+                putStrLn "Invalid input"
+                guess n
 
 -- Monad utilities
 

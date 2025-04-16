@@ -9,7 +9,6 @@ author: "Michael Lee <lee@iit.edu>"
 - List
 - Logger
 - State
-- Parser
 - IO
 
 ---
@@ -456,308 +455,121 @@ runState (nRands 5 (0,100)) (mkStdGen 1)
 
 ---
 
-# Parser
+# State
 
-A *parser* is a stateful computation that takes as its input state a string, and
-attempts to extract (parse) a structured value from the beginning of that
-string, and returns the remaining unconsumed input string along with the parsed
-value.
+## `get` and `put`
 
-E.g., an integer parser run on an input string:
+It is useful to define functions that read/update the entire state:
 
-```mermaid +render +width:70%
-flowchart LR
-    in[/''123 + x''/]
-    parser[[parser]]
-    out[/'' + x''/]
-    val(((123)))
+```haskell
+get :: State s s
+get = State $ \s -> (s, s)
 
-    in --> parser --> val
-    parser --> out
+put :: a -> State a ()
+put s = State $ \_ -> ((), s)
 ```
 
 <!-- pause -->
 
-We can define a `Parser` like so:
+Using them, we can write programs that access and modify state (within the
+monad) arbitrarily. Use this carefully, as it has the same potential pitfalls as
+regular imperative code!
 
 ```haskell
-data Parser a = Parser { parse :: String -> Maybe (a, String) }
-```
+tick :: State Int ()
+tick = do i <- get
+          put (i+1)
 
-Note that a parser may fail, which is why we wrap its output in a `Maybe`.
+statefulComp :: State Int (Int,Int)
+statefulComp = do i <- get
+                  tick
+                  tick
+                  tick
+                  i' <- get
+                  return (i, i')
+```
 
 ---
 
-# Parser
+# Digression: `newtype`
 
-A single character parser:
+The `State` type, as we defined it earlier, is really just a wrapper around an
+existing type:
 
 ```haskell
-char :: Parser Char
-char = Parser $ \s -> case s of ""     -> Nothing
-                                (c:cs) -> Just (c,cs)
+data State s a = State { runState :: s -> (a, s) }
 ```
 
 <!-- pause -->
 
-So we can do:
-
-```haskell
-parse char ""  ==  Nothing
-
-parse char "hello"  ==  Just ('h',"ello")
-```
-
-To assist with running multiple parsers *in sequence*, we should define a
-`Monad` instance for `Parser`.
-
----
-
-# Parser
-
-## Monad intance
-
-```haskell
-instance Monad Parser where
-  (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  Parser p >>= f = Parser $ \s -> case p s of
-                                    Nothing     -> Nothing
-                                    Just (x,s') -> parse (f x) s'
-
-  -- or equivalently (since Maybe is a Monad)
-  Parser p >>= f = Parser $ \s -> do (x, s') <- p s
-                                       parse (f x) s'
-```
-
-Can you see the relationship to the `State` monad?
+But we can't declare it as a type synonym using `type`, because we want to be
+able to ascribe *new semantics* to its values (and not all `s -> (a, s)` values
+in general).
 
 <!-- pause -->
 
-So we can do:
-
-```haskell
-threeChars :: Parser (Char,Char,Char)
-threeChars = do c1 <- char
-                c2 <- char
-                c3 <- char
-                return (c1,c2,c3)
-
-parse threeChars "hello"  ==  Just (('h','e','l'),"lo")
-```
+The problem: `data` introduces an extra "box" around its values, which allocates
+extra memory and makes pattern matching slower, even though the new type is
+identical to an existing type.
 
 ---
 
-# Parser
+# Digression: `newtype`
 
-## Basic parsers
-
-Parsing a character using a predicate:
+Solution: `newtype` declaration
 
 ```haskell
-sat :: (Char -> Bool) -> Parser Char
-sat p = do c <- char
-           if p c then return c else fail
+newtype State s a = State { runState :: s -> (a, s) }
+```
 
-fail :: Parser a
-fail = Parser $ \s -> Nothing
+`newtype` can replace `data` in situations where the type has *exactly one value
+constructor with exactly one field inside it*.
+
+<!-- pause -->
+
+A `newtype` declared type is distinct from its field type at compile-time, but
+*identical in representation at run-time*.
+
+- This makes it much cheaper than `data`.
+
+---
+
+# Digression: `newtype`
+
+## Distinct instances for a single type
+
+Haskell doesn't allow overlapping instances for the same type (e.g., `Maybe` can
+only have one `Functor`, `Applicative`, and `Monad` instance).
+
+<!-- pause -->
+
+But we can wrap an existing type in `newtype` to accomplish this. E.g.,
+
+```haskell
+newtype QuietInt = Quiet Int
+newtype LoudInt  = Loud Int
+
+instance Show QuietInt where
+  show (Quiet i) = "(" ++ show i ++ ")"
+
+instance Show LoudInt where
+  show (Loud i) = "<<" ++ show (i-1) ++ "+" ++ "1>>"
 ```
 
 <!-- pause -->
 
-So we can do:
+And now we have:
 
 ```haskell
-parse (sat (== 'a')) "hello"  ==  Nothing
-
-parse (sat (== 'a')) "aloha"  ==  Just ('a',"loha")
-
-parse (sat isDigit)  "aloha"  ==  Nothing
-
-parse (sat isDigit)  "123"    ==  Just ('1',"23")
-```
-
----
-
-# Parser
-
-## Basic parsers
-
-We can use `sat` to write some more parsers:
-
-```haskell
-string :: String -> Parser String
-string "" = return ""
-string (x:xs) = do sat (== x)
-                   string xs
-                   return (x:xs)
+show 10          ==  "10"
+show $ Quiet 10  == "(10)"
+show $ Loud 10   ==  "<<9+1>>"
 ```
 
 <!-- pause -->
 
-So we can do:
-
-```haskell
-parse (string "hello") "hello world"  ==  Just ("hello"," world")
-
-parse (string "hello") "aloha world"  ==  Nothing
-```
-
----
-
-# Parser
-
-## Utility functions
-
-We can implement some utility functions that combine parsers:
-
-```haskell
-(<|>) :: Parser a -> Parser a -> Parser a
-p <|> q = Parser $ \s -> case parse p s of
-                           Nothing -> parse q s
-                           Just x  -> Just x
-
-oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = do x <- p 
-                 xs <- oneOrMore p <|> return []
-                 return $ x:xs
-
-zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = oneOrMore p <|> return []
-```
-
-<!-- pause -->
-
-So we can do:
-
-```haskell
-parse (string "hi" <|> string "bye") "bye!"  ==  Just ("bye","!")
-
-parse (oneOrMore $ sat isDigit) "123hi"      ==  Just ("123","hi")
-
-parse (zeroOrMore $ sat isSpace) "  bye!"   ==  Just ("  ","bye!")
-```
-
----
-
-# Parser
-
-## More parsers
-
-And now we can implement more complex parsers!
-
-```haskell
-int :: Parser Int
-int = do cs <- oneOrMore (sat isDigit)
-         return (read cs)
-
-token :: Parser a -> Parser a
-token p = do zeroOrMore $ sat isSpace
-             x <- p
-             zeroOrMore $ sat isSpace
-             return x
-
-symbol :: String -> Parser String
-symbol s = token (string s)
-```
-
-<!-- pause -->
-
-So we can do:
-
-```haskell
-parse int "123 + x"                ==  Just (123," + x")
-parse (token int) "  123 + x"      ==  Just (123,"+ x")
-parse (symbol "foo") "  foo = 10"  ==  Just ("foo","= 10")
-```
-
----
-
-# Parser
-
-## Expression parser
-
-Let's write a program to parse and evaluate simple arithmetic expressions.
-
-Start with a data type for representing expressions:
-
-```haskell
-data Expr = Lit Int | Add Expr Expr | Sub Expr Expr
-```
-
-<!-- pause -->
-
-So an expression like `(5 + 10) - (20 - 2)` would be represented as:
-
-```haskell
-Sub (Add (Lit 5) (Lit 10))
-    (Sub (Lit 20) (Lit 2))
-```
-
----
-
-# Parser
-
-## Expression parser
-
-Can you finish implementing the parser?
-
-```haskell
-expr :: Parser Expr
-expr = do t1 <- term
-          op <- sat (== '+') <|> sat (== '-')
-          t2 <- term
-          return $ (if op == '+' then Add else Sub) t1 t2
-       <|>
-       term
-
-term :: Parser Expr
-term = ?
-```
-
-Such that:
-
-```haskell
-parse expr "(5+10)-(20-2)" == Just (Sub (Add (Lit 5) (Lit 10))
-                                        (Sub (Lit 20) (Lit 2)),"")
-
-parse expr "42+x" == Just (Lit 42,"+x")
-
-parse expr "(1+2" == Nothing
-```
-
----
-
-# Parser
-
-## Expression parser
-
-Now the evaluator:
-
-```haskell
-eval :: Expr -> Int
-eval (Lit i)     = i
-eval (Add e1 e2) = eval e1 + eval e2
-eval (Sub e1 e2) = eval e1 - eval e2
-```
-
-<!-- pause -->
-
-Can you implement `evalString`?
-
-```haskell
-evalString :: String -> Maybe Int
-evalString = ?
-```
-
-Such that:
-
-```haskell
-evalString "(5+10)-(20-2)"  ==  Just (-3)
-
-evalString "42+x"           ==  Nothing
-
-evalString "(1+2"           ==  Nothing
-```
+`newtype` allows us to define *new semantics* for an existing type, without
+creating *new structure* (which `data` always does)!
 
 ---
 
@@ -768,7 +580,7 @@ conceptually very similar to the `State` monad, with `RealWorld` replacing the
 polymorphic state:
 
 ```haskell
-data IO a = IO (RealWorld -> (a, RealWorld))
+newtype IO a = IO (RealWorld -> (a, RealWorld))
 ```
 
 <!-- pause -->
@@ -851,62 +663,6 @@ guess n = do putStr "Enter a guess: "
 
 # IO
 
-## I/O and `IO`
-
-In a compiled Haskell program, the *only way to perform I/O* is to sequence an
-`IO` monad from the `main` function (directly or indirectly). This is because
-`main` is the only function to receive a `RealWorld` value.
-
-<!-- pause -->
-
-Any function that performs I/O must return an `IO` monad. Arbitrary functions
-*cannot* perform I/O!
-
-<!-- pause -->
-
-Consider:
-
-```haskell
-foo :: Int
-foo = let _ = putStrLn "hello world!"
-      in 42
-```
-
-Does `foo` manage to "secretly" perform output in a pure function? Why or why
-not?
-
----
-
-# IO
-
-## Exception handling
-
-If an exception occurs while performing I/O, an `IOError` is available in the
-`IO` monad via the `catch` function:
-
-```haskell
-catch :: IO a -> (IOError -> IO a) -> IO a
-```
-
-<!-- pause -->
-
-We can use it like this:
-
-```haskell
-guess' n = do putStr "Enter a guess: "
-              g <- catch readLn handler
-              case compare g n of
-                LT -> putStrLn "Too small!" >> guess' n
-                GT -> putStrLn "Too big!"   >> guess' n
-                _  -> putStrLn "Spot on!"
- where handler e = do putStrLn $ show (e :: IOError)
-                      return 0
-```
-
----
-
-# IO
-
 ## Monadic utilities
 
 There are plenty of useful utilities defined in `Control.Monad` that we can use
@@ -952,6 +708,34 @@ greetAll names = forM_ names $ \name -> do
                     putStrLn $ "Hello, " ++ name
                     putStrLn "How are you?"
 ```
+
+---
+
+# IO
+
+## I/O and `IO`
+
+In a compiled Haskell program, the *only way to perform I/O* is to sequence an
+`IO` monad from the `main` function (directly or indirectly). This is because
+`main` is the only function to receive a `RealWorld` value.
+
+<!-- pause -->
+
+Any function that performs I/O must return an `IO` monad. Arbitrary functions
+*cannot* perform I/O!
+
+<!-- pause -->
+
+Consider:
+
+```haskell
+foo :: Int
+foo = let _ = putStrLn "hello world!"
+      in 42
+```
+
+Does `foo` manage to "secretly" perform output in a pure function? Why or why
+not?
 
 ---
 
