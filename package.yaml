@@ -14,22 +14,24 @@ description: See <https://github.com/cs340ppp/lectures#readme>
 
 dependencies:
   - base >= 4.7 && < 5
-  - text
-  - split
+  - ansi-terminal
+  - array
+  - async
   - bytestring
+  - containers
+  - deepseq
   - hspec
   - HUnit
   - HUnit-approx
-  - QuickCheck
-  - test-invariant
-  - mtl
-  - array
-  - deepseq
   - memoize
+  - QuickCheck
   - random
   - random-shuffle
-  - containers
-  - ansi-terminal
+  - split
+  - stm
+  - test-invariant
+  - text
+  - transformers
 
 ghc-options: []
 
