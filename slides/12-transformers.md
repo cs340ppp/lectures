@@ -8,7 +8,7 @@ author: "Michael Lee <lee@iit.edu>"
 
 - The problem
 - Monad transformers
-- State transformer monad
+- State monad transformer
 - Parsing
 - Other transformers and monad stacks
 
@@ -453,3 +453,189 @@ evalString "(1+2"           ==  Nothing
 ```
 
 ---
+
+# State & IO
+
+It is also useful to pair the `State` and `IO` monads, so that we can keep track
+of ongoing state while interacting with the real world.
+
+<!-- pause -->
+
+In order to work with functions that produce values of the inner monad, it is
+useful to have a utility to "lift" them into the `StateT` monad:
+
+```haskell
+lift :: Monad m => m a -> StateT s m a
+lift m = StateT $ \s -> do x <- m
+                           return (x, s)
+```
+
+---
+
+# State & IO
+
+Using `lift`, `IO`, and `StateT`, here's an updated guessing game that keeps
+track of all guesses:
+
+```haskell
+guess :: Int -> StateT [Int] IO ()
+guess n = do lift $ putStrLn "Enter a guess"
+             input <- lift getLine
+             case reads input of
+               [(g, "")] -> do
+                 guesses <- get
+                 put (g:guesses)
+                 if g < n then do
+                   lift $ putStrLn "Too small!"
+                   guess n
+                 else if g > n then do
+                   lift $ putStrLn "Too big!"
+                   guess n
+                 else do
+                   lift $ putStrLn "Good guess!"
+               _ -> do
+                 lift $ putStrLn "Invalid input."
+                 guess n
+```
+
+---
+
+# Plain State Monad?
+
+Now that we have `StateT`, do we still need `State`?
+
+Can we create a plain `State` monad from the `StateT` monad transformer?
+
+<!-- pause -->
+
+We need an inner monad that doesn't add any additional semantics:
+
+```haskell
+newtype Identity a = Identity a
+
+instance Functor Identity where
+  fmap f (Identity x) = Identity $ f x
+
+instance Applicative Identity where
+  pure x = Identity x
+  Identity f <*> Identity x = Identity $ f x
+
+instance Monad Identity where
+  Identity x >>= f = f x
+```
+
+<!-- pause -->
+
+And now we can trivially define `State` as:
+
+```haskell
+type State s a = StateT s Identity a
+```
+
+---
+
+# Control.Monad.Trans
+
+The `Control.Monad.Trans` module defines a bunch of monad transformers,
+including:
+
+- `ListT`, `MaybeT`, `StateT`: the list, maybe, and state monads
+- `ReaderT`: reads from an environment/configuration
+- `WriterT`: maintains a log of values
+- `ExceptT`: helps handle errors during a computation
+
+---
+
+# Some common stacks
+
+<!-- incremental_lists: true -->
+
+- `StateT s (Either e) a`: A computation that maintains mutable state and can
+  fail with an error.
+
+- `ReaderT r (StateT s IO) a`: A computation with read-only access to a
+  configuration, mutable state, and IO effects.
+
+- `ExceptT e IO a`: A computation that can throw errors during IO operations.
+
+- `MaybeT IO` : A computation that can fail silently (no error message) during
+  IO.
+
+<!-- incremental_lists: false -->
+
+## Rules of thumb
+
+- The outermost monad describes the *primary shape* of the computation.
+  - If it’s mainly configuration-driven, put `ReaderT` on the outside.
+  - If it’s mainly errorable, put `ExceptT` on the outside.
+  - If state is only an internal detail, `StateT` should be buried deeper.
+  - `IO` almost always sits at the bottom.
+- Use `lift` (or variants) to lift inner monads up
+
+---
+
+# Example stack
+
+## ReaderT r (ExceptT e IO) a
+
+A computation that has configuration (`Reader`), errors (`Except`), and `IO`
+effects.
+
+E.g., could be used to build web API request handlers: access configuration
+(e.g., database connections), do IO (e.g., DB queries), and fail with meaningful
+errors. Very common for web frameworks.
+
+<!-- pause -->
+
+Convenience type and associated definitions:
+
+```haskell
+type AppM = ReaderT Config (ExceptT AppError IO)
+
+-- Global environment settings
+data Config = Config { configApiKey :: String }
+
+-- Custom application errors
+data AppError = MissingApiKey | IOError String
+```
+
+---
+
+# Example stack
+
+## ReaderT r (ExceptT e IO) a
+
+Some functions that use the stack:
+
+```haskell
+-- A function that needs config and does IO, and may fail
+fetchData :: AppM String
+fetchData = do
+  Config key <- ask -- obtain API key from Reader
+  if key == ""
+    then throwError MissingApiKey -- error goes to Except
+    else liftIO (performApiCall key) -- API call at IO level
+```
+
+<!-- pause -->
+
+A runner for the entire stack:
+
+```haskell
+runApp :: Config -> AppM a -> IO (Either AppError a)
+runApp cfg app = runExceptT (runReaderT app cfg)
+```
+
+<!-- pause -->
+
+Which we can call like this:
+
+```haskell
+main :: IO ()
+main = do
+  let cfg = Config { configApiKey = "my-secret-key" }
+  result <- runApp cfg fetchData
+  case result of
+    Left err -> putStrLn $ "Error: " ++ show err
+    Right val -> putStrLn $ "Success: " ++ val
+```

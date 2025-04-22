@@ -5,6 +5,7 @@ module Lect12 where
 import Prelude hiding (fail)
 import Control.Exception
 import Data.Char
+import System.Random
 
 -- state monad transformer
 
@@ -116,7 +117,13 @@ eval (Sub e1 e2) = eval e1 - eval e2
 evalString :: String -> Maybe Int
 evalString s = undefined
 
--- some simple functions to read/write state
+-- lift a value from the base monad into StateT, threading the state through
+
+lift :: Monad m => m a -> StateT s m a
+lift m = StateT $ \s -> do x <- m
+                           return (x, s)
+
+-- get/put for StateT
 
 get :: Monad m => StateT s m s
 get = StateT $ \s -> return (s, s)
@@ -124,30 +131,53 @@ get = StateT $ \s -> return (s, s)
 put :: Monad m => s -> StateT s m ()
 put s = StateT $ \_ -> return ((), s)
 
--- lift a value from the base monad into StateT, threading the state through
+-- updated guessing game that tracks all guesses
 
-lift :: Monad m => m a -> StateT s m a
-lift m = StateT $ \s -> do x <- m
-                           return (x, s)
+guess :: Int -> StateT [Int] IO ()
+guess n = do lift $ putStrLn "Enter a guess"
+             input <- lift getLine
+             case reads input of
+               [(g, "")] -> do
+                 guesses <- get
+                 put (g:guesses)
+                 if g < n then do
+                   lift $ putStrLn "Too small!"
+                   guess n
+                 else if g > n then do
+                   lift $ putStrLn "Too big!"
+                   guess n
+                 else do
+                   lift $ putStrLn "Good guess!"
+               _ -> do
+                 lift $ putStrLn "Invalid input."
+                 guess n
 
--- updated guessing game
-
-guess :: StateT (Int,Int) IO ()
-guess = do (target,tries) <- get
-           lift $ putStrLn "Enter a guess"
-           input <- lift getLine
-           case reads input of -- reads tries to parse input for Int
-             [(guessVal, "")] -> do
-               put (target, tries+1)
-               if guessVal < target then do
-                 lift $ putStrLn "Too low!"
-                 guess
-               else if guessVal > target then do
-                 lift $ putStrLn "Too high!"
-                 guess
-               else
-                 lift $ putStrLn $ "You got it in "++show tries++" tries"
-             _ -> do
-               lift $ putStrLn "Invalid input."
-               guess 
+main :: IO ()
+main = do g <- getStdGen
+          let (n,_) = randomR (0,100) g
+          (_,gs) <- runStateT (guess n) []
+          putStrLn $ "Guesses " ++ show gs
+          return ()
            
+-- Identity monad
+
+newtype Identity a = Identity a deriving Show
+
+instance Functor Identity where
+  fmap f (Identity x) = Identity $ f x
+
+instance Applicative Identity where
+  pure x = Identity x
+  Identity f <*> Identity x = Identity $ f x
+
+instance Monad Identity where
+  Identity x >>= f = f x
+
+-- "plain" State monad
+
+type State s a = StateT s Identity a
+
+-- convenience constructor
+
+state :: Monad m => (s -> (a,s)) -> StateT s m a
+state f = StateT (return . f)
