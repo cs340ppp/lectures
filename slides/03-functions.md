@@ -1,6 +1,6 @@
 ---
 title: Functions
-author: Michael Lee <lee@iit.edu>
+author: "Michael Lee <lee@iit.edu>"
 ---
 
 # Functions
