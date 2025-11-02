@@ -1,7 +1,7 @@
 ---
 title: "Introduction to Haskell"
 sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael lee <lee@iit.edu>"
+author: "Michael Lee <lee@iit.edu>"
 ---
 
 # Agenda
@@ -85,7 +85,7 @@ quicksort (x:xs) = quicksort lesser ++ [x] ++ quicksort larger
 
   - Rigidly enforced by the compiler
 
-- Haskel programs are *type-safe*
+- Haskell programs are *type-safe*
 
   - There will *never* be run-time type related errors (in compiled programs)
 
@@ -189,7 +189,7 @@ of inputs*
 
 <!-- pause -->
 
-Rsults in *referential transparency*; i.e., expressions can be replaced with
+Results in *referential transparency*; i.e., expressions can be replaced with
 values *at any time* without affecting behavior
 
 <!-- pause -->
