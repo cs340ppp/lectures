@@ -24,6 +24,7 @@ dependencies:
   - HUnit
   - HUnit-approx
   - memoize
+  - mtl
   - QuickCheck
   - random
   - random-shuffle
