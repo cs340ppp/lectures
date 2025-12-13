@@ -1,225 +1,223 @@
 ---
-title: "Introduction to Haskell"
+title: "Course Overview"
 sub_title: "CS 340: Programming Patterns and Paradigms"
 author: "Michael Lee <lee@iit.edu>"
 ---
 
 # Agenda
 
-- Required tools
-- Lecture repository organization
-- Notable (& maybe surprising) language features
-- Indentation and layout rules
+- Faculty and Staff
+- About the Class
+- Resources and Tools
+- Administrivia
 
 ---
 
-# Required tools
+# Faculty and Staff
 
-- Git: a version control system
+Prof:
 
-- GitHub: a Git hosting service
+- *Michael Lee* lee@iit.edu
+- Homepage: http://moss.cs.iit.edu
+- Hours: TBA
 
-- GHCUp: an installer for Haskell development tools
+TA:
 
-- GHC: the Glasgow Haskell Compiler
-
-  - GHCi: GHC's interactive environment (REPL)
-
-- Stack: a Haskell build tool
+- TBA
 
 ---
 
-# Lecture repository organization
+# About the Class
 
-- `lectures/slides`: [Markdown][markdown-guide] formatted slides
-  - I use [presenterm](https://mfontanini.github.io/presenterm/) to present them
-    in class
-- `lectures/src`: Haskell source files (numbers correspond to slides)
-  - e.g., "src/Lect01.hs" --> "slides/01-intro.md"
-
-[markdown-guide]: https://www.markdownguide.org/
+- What?
+- Why?
+- How?
 
 ---
 
-# Notable language features
+## What?
 
-1. Conciseness
-2. Strong, static typing
-3. Type inference
-4. Sophisticated type system
-5. Purely functional
-6. Lazy evaluation
+"Programming *Patterns* and *Paradigms*"
 
----
+- *Paradigm*: Model for how to *organize*, *express*, or *execute* a program
 
-# Notable language features
-
-## 1. Conciseness
-
-Small language with few keywords:
-
-- `case`, `class`, `data`, `deriving`, `do`, `else`, `if`, `import`, `in`,
-  `infix`, `infixl`, `infixr`, `instance`, `let`, `module`, `newtype`, `of`,
-  `then`, `type`, `where`
-
-Declarative vs. Imperative style!
-
-<!-- pause -->
-
-```haskell
-quicksort []     = []
-quicksort (x:xs) = quicksort lesser ++ [x] ++ quicksort larger
-    where lesser = filter (< x)  xs
-          larger = filter (>= x) xs
-```
-
-- aided by *pattern-matching*
+- *Pattern*: Reusable *blueprint* for solving a common class of problems
 
 ---
 
-# Notable language features
+### Paradigms
 
-## 2. Strong, static typing
-
-- Every expression or variable has a type associated with it that cannot change
-
-  - Rigidly enforced by the compiler
-
-- Haskell programs are *type-safe*
-
-  - There will *never* be run-time type related errors (in compiled programs)
-
-<!-- pause -->
-
-E.g., function definition and call:
-
-```haskell
-foo :: Int -> Int
-foo x = 2 * x
-
-foo (1 :: Integer)
-```
-
-<!-- pause -->
-
-Compilation error:
-
-```
-• Couldn't match expected type ‘Int’ with actual type ‘Integer’
-• In the first argument of ‘foo’, namely ‘(1 :: Integer)’
-  In the expression: foo (1 :: Integer)
-```
+- Imperative / Functional / Logic
+- Procedural / Object-Oriented
+- Concurrent / Asynchronous / Distributed
 
 ---
 
-# Notable language features
+### Patterns
 
-## 3. Type inference
-
-The compiler can automatically figure out the types of most things on its own
-
-- Best of both static & dynamic typing worlds: we don't have to spell out type
-  declarations, but we still get typechecking
-
-<!-- pause -->
-
-E.g., undeclared variables used in a boolean expression:
-
-```haskell
-let x = "True"
-    y = False
-in x && y
-```
-
-<!-- pause -->
-
-Compilation error:
-
-```
-• Couldn't match type ‘[Char]’ with ‘Bool’
-  Expected: Bool
-    Actual: String
-```
+- Data Structures
+- Recursion
+- HOFs
+- Monads
+- DSLs
+- Testing
 
 ---
 
-# Notable language features
+## Why?
 
-## 4. Sophisticated type system
-
-A very rich, expressive system for defining and working with complex, abstract
-data types.
-
-- Algebraic data types and Type classes
-
-- Parametric polymorphism (similar to generics)
-
-- Ad-hoc polymorphism
-
-<!-- pause -->
-
-E.g., a parametric data type, type class, and conforming instance:
-
-```haskell
-data Maybe a = Just a | Nothing
-
-class Functor f where
-  fmap :: (a -> b) -> f a -> f b
-
-instance Functor Maybe where
-  fmap :: (a -> b) -> Maybe a -> Maybe b
-  fmap _ Nothing  = Nothing
-  fmap f (Just x) = Just (f x)
-```
+- *Industry adoption*: FP concepts now standard in JavaScript, Python, Rust,
+  Swift, Kotlin
+- *Think differently*: Strong typing and immutability prevent entire classes of
+  bugs
+- *Modern frameworks*: React, Redux, async/await all rooted in FP patterns
+- *Better code*: Write more modular, testable, and maintainable programs
+- *Career edge*: Stand out by understanding abstractions most developers only
+  use superficially
 
 ---
 
-# Notable language features
+## Why?
 
-## 5. Purely functional
+Patterns You'll See Everywhere
 
-Once variables are bound to values they are *immutable*
-
-<!-- pause -->
-
-All functions are *pure* -- they always return the *same output for a given set
-of inputs*
-
-- no *side effects*; i.e., no changes to external/global state
-
-<!-- pause -->
-
-Results in *referential transparency*; i.e., expressions can be replaced with
-values *at any time* without affecting behavior
-
-<!-- pause -->
-
-E.g., in what order should the function calls be evaluated? (it doesn't
-matter!!!)
-
-```haskell
-foo (bar 340) (bat (bam 42) (baz 43))
-```
+- Monads → Promises, Optionals, Result types
+- Async abstractions → Node.js, Python asyncio, Rust tokio
+- ADTs → Rust enums, TypeScript discriminated unions
+- HOFs → map/filter/reduce in every language
+- DSLs → SQL, React JSX, configuration languages
 
 ---
 
-# Notable language features
+## How?
 
-## 6. Lazy evaluation
+- Language: Haskell (clean syntax, powerful type system, pure functional)
+- Progression: Fundamentals → data structures → effects → concurrency → advanced
+  patterns
+- Hands-on practice: 6-8 machine problems to apply concepts immediately
+- Build up gradually: Each topic scaffolds to the next
+- Focus on understanding: Less memorization, more pattern recognition
+- Real applications: Every concept connects to tools you'll use professionally
 
-Expressions (e.g., function calls) are not evaluated until their results are
-actually needed.
+---
 
-Enables *infinite data structures* and short-circuiting behavior in functions
-(which require control-flow structures in non-lazy languages)!
+# Learning Outcomes
 
-<!-- pause -->
+After successfully completing the class, students should be able to:
 
-```haskell
--- builds the list 1 : 2 : 3 : 4 : 5 : ...
-inflist :: [Int]
-inflist = gen 1
-  where gen x = x : gen (x+1) -- infinite recursion
+- Write *substantial, well-typed programs* using Haskell
 
-take 3 inflist --> 1 : 2 : 3 : []
-```
+- Apply functional programming techniques such as *recursion*, *higher-order
+  functions*, and *pattern matching* to solve problems
+
+- Design and implement *reusable, polymorphic data types* and *functional data
+  structures*
+
+- Use *monads* to compose and manage *computational effects*
+
+- Write *asynchronous* and *concurrent* programs using functional abstractions
+
+- Design and implement *domain-specific languages* for solving structured
+  problems
+
+- Write and use *property-based tests* to verify program correctness
+
+---
+
+# Resources and Tools
+
+- Haskell Toolchain
+- Git, GitHub, and GitHub Classroom
+- Lecture Repository
+
+---
+
+## Haskell Toolchain
+
+Toolchain setup instructions (writeup and video) on Canvas
+
+- `GHCUp`: installer for Haskell development tools
+
+- `GHC`: Glasgow Haskell Compiler
+
+  - `GHCi`: GHC's interactive environment (REPL)
+
+- `Stack`: a Haskell build tool
+
+---
+
+## Git, GitHub, and GitHub Classroom
+
+Most course content is version-controlled
+
+- `git` for tracking course content and your own work
+
+- *GitHub* for hosting public and private shared repositories
+
+- *GitHub Classroom* for handling assignment distribution and GitHub <->
+  @IllinoisTech username mapping
+
+---
+
+## Lecture Repository
+
+Located at `https://github.com/cs340ppp/lectures`
+
+- Two branches: `main` and `demo`
+
+  - `demo` contains "starter" code for lectures, and `main` contains "completed"
+    code (spoilers!)
+
+- `lectures/slides`: Markdown formatted slides
+
+  - I use [Presenterm][presenterm] to present them in class
+
+- `lectures/src`: Haskell source files
+
+[presenterm]: https://mfontanini.github.io/presenterm/
+
+---
+
+---
+
+# Administrivia
+
+- Prerequisites
+- Grading
+- Assessments
+- References
+
+---
+
+## Prerequisites
+
+---
+
+## Grading
+
+- 50%	Machine Problems
+- 25%	Midterm Exam
+- 25%	Final Exam
+
+---
+
+## Assessments
+
+---
+
+## Late Policy
+
+---
+
+## References
+
+- Learn You a Haskell for Great Good
+- Graham Hutton, *Programming in Haskell*
+- O'Sullivan, Stewart, Goerzen, *Real World Haskell*
+
+---
+
+# Before Next Class
+
+Read Hughes’s “Why Functional Programming Matters”  (at least sections 1 & 2, if
+you can get further, great!)
