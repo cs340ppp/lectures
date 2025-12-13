@@ -78,6 +78,7 @@ will check it for us (try messing some up!)
 ```haskell
 True :: Bool
 42 :: Int
+(42, True) :: (Int, Bool)
 2 ^ 100 :: Integer
 "hello" !! 0 :: Char
 sqrt 2 :: Double
