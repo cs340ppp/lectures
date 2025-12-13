@@ -9,9 +9,9 @@ author: "Michael Lee <lee@iit.edu>"
 - Types and Type Systems
 - Type Annotations and Type Inference
 - Function Types
+- Kinds and Higher-Order Types
 - Polymorphic Types and Parametric Polymorphism
 - Type Classes and Ad Hoc Polymorphism
-- Kinds and Higher-Order Types
 
 <!--
 speaker_note: |
@@ -37,7 +37,7 @@ evaluate to them.
 
 ---
 
-# What's a "Type System"?
+# What's a *Type System*?
 
 <!-- pause -->
 
@@ -103,7 +103,7 @@ possible type* for an expression.
 
 ---
 
-# Function types
+# Function Types
 
 <!-- pause -->
 
@@ -131,7 +131,7 @@ One way to describe a function of multiple arguments is like this:
 
 `add :: (Int, Int) -> Int`
 
-- i.e., `add` is a function that maps two `Int`s to a single `Int`
+- i.e., `add` is a function that maps a pair of `Int`s to a single `Int`
 
 <!-- pause -->
 
@@ -162,6 +162,63 @@ It may seem odd, but is actually incredibly useful and powerful!
 
 Check out the types of the functions `&&` and `||`. Note that "operators" are
 just functions whose names start with symbols.
+
+---
+
+# Exercise: Counting Arguments (Arity)
+
+How many arguments does each function take? What is its final return type?
+
+```haskell
+f1 :: Char -> Int
+
+f2 :: Int -> Bool -> Char -> Int
+
+f3 :: (Int -> Int) -> Int
+
+f4 :: (Int, Int) -> Char -> Int
+
+f5 :: String -> (String -> String -> Bool) -> Bool
+```
+
+---
+
+# Exercise: Imagining Functions
+
+Consider the following types. What are the (meaningful) names of some functions
+that inhabit them?
+
+```haskell
+? :: Int -> Int
+
+? :: Bool -> Bool -> Bool
+
+? :: Char -> Char
+
+? :: String -> Int
+
+? :: String -> String -> String
+```
+
+<!--
+speaker_note: |
+
+  ? :: Int -> Int
+  -- Examples: increment, double, square, negate, abs...
+
+  ? :: Bool -> Bool -> Bool
+  -- Examples: and, or, xor, implies...
+
+  ? :: Char -> Char
+  -- Examples: toUpper, toLower, nextChar...
+
+  ? :: String -> Int
+  -- Examples: length, count_words, count_vowels...
+
+  ? :: String -> String -> String
+  -- Examples: concatenate, interleave, interpolate...
+
+-->
 
 ---
 
@@ -216,11 +273,17 @@ You can inspect the kind of a type in GHCi with `:k`
 
 Check out the kinds of these types:
 
-- `[]`, `Maybe`, `(,)`, `(,,)`
+- `[]`, &nbsp; `Maybe`, &nbsp; `(,)`, &nbsp; `(,,)`
 
 For historical reasons, GHCi prints `*` for `Type`
 
 - E.g., `* -> *` means `Type -> Type`
+
+<!-- pause -->
+
+Check out the types of these values: (can you spot the type constructors?)
+
+- `['a', 'b', 'c']`, &nbsp; `Just True`, &nbsp; `('h', False, 'i')`
 
 ---
 
@@ -296,6 +359,12 @@ Check out the types of these polymorphic functions: `id`, `const`, `fst`,
 `repeat`
 
 - Can you guess what they do?
+
+<!-- pause -->
+
+Note that type constructors can be given type variables as their arguments.
+
+- e.g., `[a]` is a list of arbitrary type `a`
 
 ---
 
@@ -375,7 +444,7 @@ in a polymorphic type.
 
 <!-- pause -->
 
-E.g., `equal` uses `Eq` as a class constraint so that it can search for a
+E.g., `elem` uses `Eq` as a class constraint so that it can search for a
 matching element in a list:
 
 ```haskell
