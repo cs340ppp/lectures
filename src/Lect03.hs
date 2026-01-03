@@ -82,6 +82,18 @@ quadrantNames (x, y) = case quadrant (x, y) of 1 -> "All"
                                                3 -> "Teachers"
                                                4 -> "Crazy"
                                                _ -> "Origin"
+
+verboseCompare :: Int -> Int -> String
+verboseCompare x y = 
+  "Comparing " ++ show x ++ " and " ++ show y ++ ": " ++
+  case (abs x, abs y) of
+    (0, 0) -> "both zero"
+    (0, _) -> "first is zero"
+    (_, 0) -> "second is zero"
+    (a, b) | a > b     -> "first has larger magnitude"
+           | a < b     -> "second has larger magnitude"
+           | otherwise -> "equal magnitudes"
+
 quadRoots :: Double -> Double -> Double -> (Double, Double)
 quadRoots a b c = let disc = a^2 - 4*a*c
                       x1 = (-b + sqrt disc) / (2*a)
