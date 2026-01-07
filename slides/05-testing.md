@@ -6,301 +6,697 @@ author: "Michael Lee <lee@iit.edu>"
 
 # Agenda
 
-- What is testing?
-- Approaches to testing & verification
-- Hspec testing framework
-- Example-based tests with Hspec
-- Property-based tests with QuickCheck
+- Definition & Motivation
+- Test-Driven Development (TDD)
+- Approaches to Testing
+  - Example-based testing
+  - Property-based testing
+- TDD: A Complete Example
 - Test coverage
 
 ---
 
-# What is testing?
+# What is Testing?
 
 A *test* verifies that some aspect of a system works to specification.
 
-<!-- pause -->
+## Why test?
 
-Testing tools can help:
-
-- simplify test specification, discovery, execution, and reporting
-
-- ensure that code changes don't break existing functionality (no regressions)
-
-- determine code coverage (how much of the codebase is actually run)
-
-- eliminate code "lint" (aka "dead code")
+- Catch bugs early
+- Prevent future regressions
+- Document expected behavior
+- Build confidence in correctness
 
 ---
 
-# Approaches to testing & verification
+# Testing Frameworks
 
-General strategy: Test-Driven Development (TDD)
+Testing frameworks are software libraries that provide:
 
-- Write tests *first*, ensure they fail, then write code to get them to pass
-
-- After all tests pass, any future code refactoring requires re-running tests
-
----
-
-# Approaches to testing & verification
-
-But how to write tests? (How to verify correctness?)
-
-- *Static tests* are carried out by a compiler, which checks for syntax and
-  type related errors. We write *type signatures* to help the compiler.
-
-- *Unit tests* check that "units" of code (e.g., functions, classes) work as 
-  expected. Their specification/execution is facilitated by test frameworks.
-
-<!-- pause -->
-
-  - *Example-based tests* explicitly declare the expected results (e.g.,
-    return value, output, exception) for different inputs and/or state.
-  
-  - *Property-based tests* declare high-level "properties" (aka invariants) 
-    that must hold true for all inputs and/or state. Specific cases are 
-    automatically generated and checked.
-
-<!-- pause -->
-
-- *Formal verification* may be done at a higher level of abstraction. It is
-  typically done by a theorem prover, which checks for logical errors by
-  proving that the program satisfies a set of logical properties.
+- Structured ways to specify different types of tests
+- Automatic test discovery and execution
+- Clear reporting of failures
+- Coverage analysis
 
 ---
 
-# Hspec testing framework
+# Test-Driven Development (TDD)
 
-Hspec gives us a way to specify tests in a human-legible way:
+Write tests *first*, then write code to make them pass.
+
+TDD workflow:
+
+1. Write a test for desired functionality (test fails - "red")
+2. Write minimal code to make the test pass ("green")
+3. Refactor code while keeping tests passing
+4. Repeat
+
+---
+
+## Benefits of TDD
+
+- Forces you to think about requirements and API design upfront
+- Ensures all code is testable
+- Provides fast feedback loop
+- Prevents you from doing more than is necessary
+
+---
+
+# Approaches to Testing
+
+*Static testing* - Performed by the compiler
+
+- Types and type checking catch errors before runtime
+
+*Unit testing* - Testing individual functions/modules
+
+- *Example-based*: Explicit inputs → expected outputs
+- *Property-based*: General properties that should hold for all inputs
+
+*Integration/System testing* - Testing components working together
+
+---
+
+## Example-based tests with Hspec
+
+`Hspec` helps us write test specifications in Haskell:
 
 ```haskell
-someSpec :: Spec
-someSpec = 
-  describe "someFunc" $ do
-    it "fulfills some expectation ..." $
-      pendingWith "Need to flesh out this test"
-    it "fulfills some other expectation ..." $
-      pending
-```
+import Test.Hspec
+import Test.QuickCheck
 
-<!-- pause -->
-
-- Run a `Spec` using `hspec`.
-
-- Hspec supports both unit tests and property-based tests
-
-- `stack test` will run "test/Spec.hs", which will automatically discover
-  all "*Spec.hs" files in the "test" directory and run their "spec" functions
-
----
-
-# Example-based tests with Hspec
-
-Hspec provides various functions for creating `Expectations`:
-
-- `shouldBe` / `shouldNotBe`
-- `shouldSatisfy` / `shouldNotSatisfy`
-- `shouldMatchList` / `shouldNotMatchList`
-- `shouldThrow` / `shouldNotThrow`
-
----
-
-# Example-based tests with Hspec
-
-E.g., let's write a specification for `c2k`, `c2f`, `f2c`:
-
-```haskell
-c2k :: (Ord a, Floating a) => a -> a
-c2k c | c >= 0 = c + 273.15
-      | otherwise = error "Temperature below absolute zero"
-
-c2f :: Floating a => a -> a
-c2f c = c * 9/5 + 32
-
-f2c :: Floating a => a -> a
-f2c f = (f - 32) * 5/9
+mySpec :: Spec
+mySpec = 
+  describe "myFunction" $ do  -- `describe` groups tests
+    it "handles the base case" $  -- `it` denotes a test case
+      myFunction [] `shouldBe` 0 
+    it "works on known examples" $ do
+      myFunction [1,2,3] `shouldBe` 6  -- `shouldBe` et al set
+      myFunction [5] `shouldBe` 5      --  test expectations
+    it "satisfies important properties" $
+      property prop_myFunction  -- `property` denotes a 
+                                --  property-based test
 ```
 
 ---
 
-# Example-based tests with Hspec
+## Pros/Cons of Example-Based Testing
+
+**Pros:**
+
+- Clear, easy to understand, good for edge cases
+
+**Cons:**
+
+- Only tests the examples you think of
+- Can miss edge cases
+- Tedious to write comprehensive test suites (AI can help!)
+- Hard to test functions with large input spaces
+
+---
+
+# Property-Based Testing
+
+Instead of individual examples, we specify *properties* that should hold for
+*all* inputs, and the test framework *generates* tests for us.
 
 ```haskell
-celsiusConversionSpec :: Spec
-celsiusConversionSpec = 
-  describe "Celsius conversions" $ do
-    describe "c2k" $ do
-      it "works for known examples" $ do
-        c2k 0 `shouldBe` 273.15
-        c2k 100 `shouldBe` 373.15
-      it "fails for sub-abs-zero temperatures" $ do
-        evaluate (c2k (-300)) `shouldThrow` anyException
-    describe "c2f" $ do
-      it "works for known examples" $ do
-        c2f 0 `shouldBe` 32
-        c2f 100 `shouldBe` 212
-    describe "f2c" $ do
-      it "works for known examples" $ do
-        f2c 32 `shouldBe` 0
-        f2c 212 `shouldBe` 100
+-- Property: reversing twice gives back the original
+prop_reverseReverse :: [Int] -> Bool
+prop_reverseReverse xs = reverse (reverse xs) == xs
 ```
 
+QuickCheck (a Haskell property-based testing library) will:
+
+1. Generate 100 random `[Int]` values
+2. Check the property for each
+3. Report any failures
+4. Try to "shrink" failures to minimal counterexamples
+
 ---
 
-# Example-based tests with Hspec
+# Why Property-Based Testing?
 
-E.g., let's write a specification for `quadRoots`:
+Explores the input space more *thoroughly*:
+
+- Tests (edge) cases you didn't think of
+- Tests combinations of inputs
+
+Documents behavior at a *higher level*:
+
+- Properties capture the "essence" of a function
+- Less brittle and easier to maintain than specific examples
+
+*Complements* example-based testing:
+
+- Use examples for specific edge cases and clarity
+- Use properties for general correctness
+
+---
+
+# What Makes a Good Property?
+
+Good properties are:
+
+1. *General*: Should hold for all valid inputs, not just some
+2. *Meaningful*: Should actually test something important
+3. *Independent*: Shouldn't depend on implementation details
+
+---
+
+# Common Property Patterns
+
+- *Inverse functions*: `f (g x) == x`
+- *Invariants*: Something that doesn't change (e.g., `length` after `sort`)
+- *Idempotence*: Applying twice = applying once (e.g., `f (f x) == f x`)
+- *Commutativity*: Order doesn't matter (e.g., `x + y == y + x`)
+- *Reference implementation*: Compare against a known-correct implementation
+
+---
+
+## E.g., Inverse Functions
+
+Functions that "undo" each other should round-trip:
 
 ```haskell
-quadRoots :: (Floating a, Ord a) => a -> a -> a -> (a, a)
-quadRoots a b c 
-    | disc >= 0 = ((-b + sqrt_d) / (2*a), 
-                   (-b - sqrt_d) / (2*a))
-    | otherwise = error "No real roots"
-  where disc   = b^2 - 4*a*c
-        sqrt_d = sqrt disc
-```
+-- reverse is its own inverse
+prop_reverseInverse :: [Int] -> Bool
+prop_reverseInverse xs = reverse (reverse xs) == xs
 
----
-
-# Example-based tests with Hspec
-
-```haskell
-quadRootsSpec :: Spec
-quadRootsSpec = 
-  describe "quadRoots" $ do
-    it "works for known examples" $ do
-      quadRoots 1 (-5) 6 `shouldBe` (3.0, 2.0)
-      quadRoots 1 0 (-4) `shouldBe` (2.0, -2.0)
-    it "fails when non-real roots exist" $ do
-      evaluate (quadRoots 1 0 1) `shouldThrow` anyException
-```
-
-<!-- pause -->
-
-Discussion: what are some problems / shortcomings of example-based testing?
-
----
-
-# Property-based tests with QuickCheck
-
-QuickCheck is the original property-based testing framework. To use it, we
-specify properties for the unit being tested, and QuickCheck will automatically
-generate test cases to check that the property holds.
-
-<!-- pause -->
-
-A property is function that takes test inputs and returns `Bool` or `Property`. 
-
-- properties must be monomorphic (i.e., they can't have type variables), as
-  QuickCheck needs concrete types to create random values
-
-- "generators" produce random test cases, and can be customized
-
-- if QuickCheck can falsify a property (i.e., prove that it doesn't hold), it
-  tries to "shrink" the test cases to give us a minimal counterexample
-
----
-
-# Property-based tests with QuickCheck
-
-E.g., write a property to test that `c2f` and `f2c` are inverses:
-
-```haskell
+-- Converting back and forth between representations
 prop_c2f2c :: Double -> Bool
 prop_c2f2c c = abs (f2c (c2f c) - c) < 0.0001
 ```
 
----
-
-# Property-based tests with QuickCheck
-
-E.g., write a property to test `mySum` using `sum` as a reference 
-implementation:
-
-```haskell
-mySum :: (Eq a, Num a) => [a] -> a
-mySum [] = 0
-mySum (x:xs) = x + mySum xs
-
-prop_sum :: [Integer] -> Bool
-prop_sum xs = mySum xs == sum xs
-```
-
-What happens if you break `mySum`?
+This is one of the most common and useful property patterns!
 
 ---
 
-# Property-based tests with QuickCheck
+## E.g., Invariants
 
-E.g., try writing properties to test distributivity of multiplication over
-addition and commutativity of addition:
+Some properties of the output shouldn't change:
 
 ```haskell
-prop_distMultOverAdd :: Integer -> [Integer] -> Bool
-prop_distMultOverAdd n xs = n * sum xs == sum (map (*n) xs)
+-- Sorting preserves length
+prop_sortLength :: [Int] -> Bool
+prop_sortLength xs = length (sort xs) == length xs
 
-prop_commAdd :: [Integer] -> Property
-prop_commAdd xs = not (null xs) ==> 
-                  sum xs == sum (reverse xs)
+-- Sorting preserves elements (just reorders)
+prop_sortPreserves :: [Int] -> Bool
+prop_sortPreserves xs = sort (sort xs) == sort xs
 ```
 
 ---
 
-# Property-based tests with QuickCheck
+## E.g., Algebraic Laws
 
-E.g., write a property to test that `quadRoots` works correctly for perfect
-squares and factorable quadratic equations:
+Test mathematical properties and relationships:
 
 ```haskell
-prop_perfSquare :: Double -> Bool
-prop_perfSquare r = 
-  let (r1, r2) = quadRoots 1 (-2*r) (r^2)
-  in abs (r1 - r) < 0.0001 && abs (r2 - r) < 0.0001
+-- Empty list is identity for append
+prop_appendIdentity :: [Int] -> Bool
+prop_appendIdentity xs = xs ++ [] == xs && [] ++ xs == xs
 
-prop_solvesFactored :: Double -> Double -> Bool
-prop_solvesFactored r1 r2 = 
-  let (r1', r2') = quadRoots 1 (-(r1+r2)) (r1*r2)
-  in abs (r1' - r1) < 0.0001 && abs (r2' - r2) < 0.0001
+-- Commutativity of addition
+prop_sumCommutes :: [Int] -> Bool
+prop_sumCommutes xs = sum xs == sum (reverse xs)
 ```
 
 ---
 
-# Property-based tests with QuickCheck
+# TDD: A Complete Example
 
-E.g., define a `Spec` combining property-based and unit tests:
+Let's walk through developing a list function using TDD:
+
+**Goal:** Write `removeAt` — remove an element at a given index
 
 ```haskell
-quadRootsSpec' :: Spec
-quadRootsSpec' = 
-  describe "quadRoots" $ do
-    it "works for known examples" $ do
-      quadRoots 1 (-5) 6 `shouldBe` (3.0, 2.0)
-    it "fails when non-real roots exist" $ do
-      evaluate (quadRoots 1 0 1) `shouldThrow` anyException
-    it "works correctly with perfect squares" $ 
-      property prop_perfSquare
-    it "works correctly with factorable quadratic equations" $ 
-      property prop_solvesFactored
+removeAt :: Int -> [a] -> [a]
 ```
+
+Examples:
+
+- `removeAt 0 [1,2,3]` → `[2,3]`
+- `removeAt 1 [1,2,3]` → `[1,3]`
+- `removeAt 2 [1,2,3]` → `[1,2]`
 
 ---
 
-# Test coverage
+## Step 1: Write Property-Based Tests First
 
-How much of our code are we actually testing? 
+Before writing any code, let's think: what should always be true?
 
-- are there functions we're never calling?
+**Property:** Removing an element should shorten the list by 1
 
-- are there patterns/guards/branches we're never matching/taking?
-
-- are there unreachable sections of code?
+```haskell
+prop_removeAtLength :: Int -> [Int] -> Bool
+prop_removeAtLength n xs = 
+  length (removeAt n xs) == length xs - 1
+```
 
 <!-- pause -->
 
-`stack test --coverage` generates a coverage report for all modules tested.
+**Problem:** What if `n` is negative? Or `n >= length xs`?
 
 <!-- pause -->
 
-100 percent test coverage is a noble goal!
+We need a *precondition* — a requirement that must be true for the property to
+be meaningful.
+
+---
+
+### Conditional Properties with `==>`
+
+QuickCheck's `==>` operator lets us add preconditions:
+
+```haskell
+prop_removeAtLength :: Int -> [Int] -> Property
+prop_removeAtLength n xs = 
+  (n >= 0 && n < length xs) ==> 
+    length (removeAt n xs) == length xs - 1
+```
+
+<!-- pause -->
+
+Left side of `==>` is the precondition; Right side is the property to test
+
+- `==>` returns a `Property`
+
+---
+
+### How `==>` Works
+
+```haskell
+prop_removeAtLength :: Int -> [Int] -> Property
+prop_removeAtLength n xs = 
+  (n >= 0 && n < length xs) ==> 
+    length (removeAt n xs) == length xs - 1
+```
+
+<!-- pause -->
+
+When QuickCheck runs this:
+
+1. Generates random `n` and `xs`
+2. Checks if `n >= 0 && n < length xs`
+3. If `False`: discards this test case and tries another
+4. If `True`: checks the property `length (removeAt n xs) == length xs - 1`
+
+---
+
+## Step 2: Write Our Test Spec
+
+```haskell
+removeAtSpec :: Spec
+removeAtSpec = 
+  describe "removeAt" $ do
+    it "shortens the list by 1" $
+      property prop_removeAtLength
+```
+
+<!-- pause -->
+
+This test will fail because we haven't written `removeAt` yet!
+
+---
+
+## Step 3: Initial Implementation (Buggy!)
+
+First attempt — seems reasonable:
+
+```haskell
+removeAt :: Int -> [a] -> [a]
+removeAt n xs = take n xs ++ drop n xs
+```
+
+<!-- pause -->
+
+Logic:
+
+- `take n xs` gets elements before index n
+- `drop n xs` skips to index n
+- Concatenate them together
+
+<!-- pause -->
+
+Seems right... let's run the tests!
+
+---
+
+## Step 4: Properties Fail Immediately!
+
+```
+removeAt
+  shortens the list by 1
+    *** Failed! Falsified (after 5 tests and 2 shrinks):
+    1
+    [0,1]
+```
+
+<!-- pause -->
+
+The property caught a bug right away!
+
+<!-- pause -->
+
+QuickCheck:
+
+- Generated lots of test cases
+- Found one that failed (maybe `removeAt 3 [2,5,1,8,0,9,4]`)
+- **Shrunk** it to *minimal counterexample*: `n=1`, `xs=[0,1]`
+
+---
+
+## Step 5: Understanding the Failure
+
+The minimal counterexample is `removeAt 1 [0,1]`:
+
+```haskell
+removeAt 1 [0,1]
+  = take 1 [0,1] ++ drop 1 [0,1]
+  = [0] ++ [1]
+  = [0,1]
+```
+
+<!-- pause -->
+
+- Original list: `[0,1]` has length 2
+- After "removing": `[0,1]` has length 2
+- Expected: length 1
+
+<!-- pause -->
+
+The bug is clear: `drop 1` keeps the element at index 1, it doesn't skip it!
+
+<!-- pause -->
+
+**We need:** `drop (n+1)` not `drop n`
+
+---
+
+### The Power of Shrinking
+
+Without shrinking, we might have seen:
+
+```
+*** Failed! Falsified (after 5 tests):
+3
+[2,5,1,8,0,9,4]
+```
+
+Debugging this is harder!
+
+<!-- pause -->
+
+With shrinking:
+
+```
+*** Failed! Falsified (after 5 tests and 2 shrinks):
+1
+[0,1]
+```
+
+The minimal example makes the bug obvious!
+
+---
+
+## Step 6: Fix the Bug
+
+Correct implementation:
+
+```haskell
+removeAt :: Int -> [a] -> [a]
+removeAt n xs = take n xs ++ drop (n+1) xs
+```
+
+<!-- pause -->
+
+Now let's verify:
+
+```haskell
+removeAt 1 [0,1]
+  = take 1 [0,1] ++ drop 2 [0,1]
+  = [0] ++ []
+  = [0]
+```
+
+<!-- pause -->
+
+Length is now 1 — correct!
+
+---
+
+## Step 7: Property Passes!
+
+```
+removeAt
+  shortens the list by 1
+    +++ OK, passed 100 tests; 456 discarded.
+```
+
+<!-- pause -->
+
+"456 discarded" means QuickCheck tried many random `n` and `xs` pairs where `n`
+wasn't a valid index. It still found 100 valid cases to test.
+
+<!-- pause -->
+
+But discarding 456 tests to find 100 valid ones is wasteful...
+
+Can we do better?
+
+---
+
+## Step 8: Better Test Generation with `forAll`
+
+<!-- pause -->
+
+Solution: Use `forAll` to generate only valid test cases:
+
+```haskell
+prop_removeAtLength' :: Property
+prop_removeAtLength' = 
+  forAll (listOf1 arbitrary) $ \xs ->
+  forAll (choose (0, length xs - 1)) $ \n ->
+    length (removeAt n xs) == length xs - 1
+```
+
+No precondition needed — all generated cases are valid!
+
+---
+
+### How `forAll` Works
+
+```haskell
+forAll generator $ \value -> property
+```
+
+<!-- pause -->
+
+`forAll` takes two arguments:
+
+1. A *generator* that produces random values
+2. A *function* from the generated value to a property
+
+<!-- pause -->
+
+Common generators:
+
+- `arbitrary` — default generator for any type
+- `choose (low, high)` — random number in range
+- `listOf1 arbitrary` — non-empty list
+- `elements [...]` — random element from a list
+
+---
+
+### Our Usage of `forAll`
+
+```haskell
+prop_removeAtLength' :: Property
+prop_removeAtLength' = 
+  forAll (listOf1 arbitrary) $ \xs ->
+  forAll (choose (0, length xs - 1)) $ \n ->
+    length (removeAt n xs) == length xs - 1
+```
+
+<!-- pause -->
+
+Reading this:
+
+1. Generate a non-empty list, call it `xs`
+2. Generate a valid index in [0, length-1], call it `n`
+3. Check that `length (removeAt n xs) == length xs - 1`
+
+---
+
+### `forAll` Result and Summary
+
+Result: No discarded tests!
+
+```
+removeAt
+  shortens the list by 1
+    +++ OK, passed 100 tests.
+```
+
+Both `==>` and `forAll` give us control over test cases
+
+- `==>` is simple but may discard many cases
+- `forAll` generates only valid test cases, and gives us full control over test
+  distribution
+
+---
+
+## Step 9: Add More Properties
+
+**Property 2:** The element at index n should be gone
+
+```haskell
+prop_removeAtCorrect :: Property
+prop_removeAtCorrect = 
+  forAll (listOf1 arbitrary) $ \xs ->
+  forAll (choose (0, length xs - 1)) $ \n ->
+    let removed = removeAt n xs
+        before = take n xs
+        after = drop (n+1) xs
+    in removed == before ++ after
+```
+
+<!-- pause -->
+
+This checks that we're actually removing the right element and keeping
+everything else in order.
+
+---
+
+## Step 10: Add Example-Based Tests
+
+Now that our properties pass, let's add some example tests for documentation:
+
+```haskell
+removeAtSpec :: Spec
+removeAtSpec = 
+  describe "removeAt" $ do
+    it "shortens the list by 1" $
+      property prop_removeAtLength'
+    
+    it "removes the correct element" $
+      property prop_removeAtCorrect
+    
+    it "removes from single-element list" $
+      removeAt 0 [42] `shouldBe` ([] :: [Int])
+    
+    it "removes first element" $
+      removeAt 0 [1,2,3] `shouldBe` [2,3]
+    
+    it "removes last element" $
+      removeAt 2 [1,2,3] `shouldBe` [1,2]
+```
+
+---
+
+# Property-First TDD Workflow
+
+1. **Think about invariants:** What should always be true?
+2. **Write properties:** Express those invariants as tests
+3. **Implement:** Write code to satisfy properties
+4. **Debug:** Let shrinking guide you to bugs
+5. **Add examples:** Document specific cases
+
+<!-- pause -->
+
+This is more powerful than:
+
+1. Write examples
+2. Implement
+3. Hope you covered all cases
+
+---
+
+# Test Coverage
+
+How much of our code is actually tested?
+
+```bash
+stack test --coverage
+```
+
+Generates a report showing:
+
+- Which functions are called
+- Which patterns/branches are exercised
+- Which code is unreachable (dead code)
+
+---
+
+# Coverage Example
+
+After running tests with coverage, you might see:
+
+```
+ 50% expressions used (42/84)
+ 66% boolean coverage (4/6)
+ 37% guards (3/8)
+ 75% if conditions (3/4)
+100% function coverage (5/5)
+```
+
+<!-- pause -->
+
+This tells you:
+
+- Some expressions never evaluated
+- Some guards never taken
+- But all functions are at least called
+
+<!-- pause -->
+
+Use this to identify untested code paths!
+
+---
+
+# Best Practices
+
+**Start simple:**
+
+- Begin with inverse functions and invariants
+- Add more complex properties as you gain experience
+
+<!-- pause -->
+
+**Combine approaches:**
+
+- Use examples for specific edge cases
+- Use properties for general correctness
+
+<!-- pause -->
+
+**Let failures guide you:**
+
+- Shrunk counterexamples reveal the essence of bugs
+- Don't ignore what QuickCheck finds!
+
+---
+
+# Best Practices (cont.)
+
+**Think about properties while coding:**
+
+- "What should always be true?"
+- "What are the invariants?"
+- "Is there a reference implementation?"
+
+<!-- pause -->
+
+**Write tests first (TDD):**
+
+- Properties document expected behavior
+- Tests catch bugs early
+- Refactoring is safer
+
+<!-- pause -->
+
+**Aim for high coverage:**
+
+- But don't sacrifice property quality for coverage numbers
+- Meaningful properties naturally increase coverage
