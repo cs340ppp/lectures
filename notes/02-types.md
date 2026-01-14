@@ -1,6 +1,4 @@
 # Types
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -15,8 +13,7 @@ Michael Lee <lee@iit.edu>
 
 ## What's a *Type*?
 
-A *type* classifies a set of *values* (aka *terms*), and *expressions* that
-evaluate to them.
+A *type* classifies a set of *values* (aka *terms*), and *expressions* that evaluate to them.
 
 - Simple: `Boolean`: `True` & `False`; `Int`: `0`, `1`, `2`, ...
 
@@ -26,11 +23,9 @@ evaluate to them.
 
 ## What's a *Type System*?
 
-A *type system* assigns static types to program constructs, and *enforces rules
-on their use*.
+A *type system* assigns static types to program constructs, and *enforces rules on their use*.
 
-Haskell's type system guarantees that well-typed programs *never produce type
-errors at runtime* (type-safety).
+Haskell's type system guarantees that well-typed programs *never produce type errors at runtime* (type-safety).
 
 - To ensure this, the compiler is strict -- we must learn its rules!
 
@@ -47,8 +42,7 @@ Type names are *always capitalized*
 
 ## Type Annotations
 
-We can explicitly attach a type to an expression in Haskell, and the compiler
-will check it for us (try messing some up!)
+We can explicitly attach a type to an expression in Haskell, and the compiler will check it for us (try messing some up!)
 
 ```haskell
 True :: Bool
@@ -61,23 +55,19 @@ sqrt 2 :: Double
 
 ## Type Inference
 
-We rarely type-annotate expressions manually. Haskell is capable of *inferring*
-types for us.
+We rarely type-annotate expressions manually. Haskell is capable of *inferring* types for us.
 
 At GHCi, `:t` tells us the inferred type of an expression.
 
 - Try it with the earlier expressions -- what types do you get?
 
-Haskell's type inference will always infer (and enforce) the *most general
-possible type* for an expression.
+Haskell's type inference will always infer (and enforce) the *most general possible type* for an expression.
 
 ## Function Types
 
 How would you describe the type of a function like `sqrt`?
 
-In Haskell, we use an arrow (`->`) to separate the argument type and return type
-in a function type. Intuitively, `->` means "maps to" (as from domain to
-co-domain).
+In Haskell, we use an arrow (`->`) to separate the argument type and return type in a function type. Intuitively, `->` means "maps to" (as from domain to co-domain).
 
 Check out the types of these functions (using `:t`):
 
@@ -95,8 +85,7 @@ But it is much more common to write them like this:
 
 `add :: Int -> (Int -> Int)`
 
-- i.e., `add` is a function that maps an `Int` to another function that maps an
-  `Int` to an `Int`
+- i.e., `add` is a function that maps an `Int` to another function that maps an `Int` to an `Int`
 
 - `->` is right-associative, so `Int -> (Int -> Int)` = `Int -> Int -> Int`
 
@@ -108,8 +97,7 @@ This one-argument-at-a-time nature of functions is known as *currying*.
 
 It may seem odd, but is actually incredibly useful and powerful!
 
-Check out the types of the functions `&&` and `||`. Note that "operators" are
-just functions whose names start with symbols.
+Check out the types of the functions `&&` and `||`. Note that "operators" are just functions whose names start with symbols.
 
 ## Exercise: Counting Arguments (Arity)
 
@@ -129,8 +117,7 @@ f5 :: String -> (String -> String -> Bool) -> Bool
 
 ## Exercise: Imagining Functions
 
-Consider the following types. What are the (meaningful) names of some functions
-that inhabit them?
+Consider the following types. What are the (meaningful) names of some functions that inhabit them?
 
 ```haskell
 ? :: Int -> Int
@@ -161,8 +148,7 @@ that inhabit them?
 
 ## Kinds
 
-Not all types classify terms directly. Those that do (the ones discussed so
-far), are called *concrete types*.
+Not all types classify terms directly. Those that do (the ones discussed so far), are called *concrete types*.
 
 - We say concrete types are *inhabited* by terms
 
@@ -174,8 +160,7 @@ I.e, *term*s are grouped by *type*, and *type*s are grouped by *kind*
 
 ## Higher-Order Types
 
-*Higher-order types* are constructed from other types, and are not on their own
-inhabited by terms.
+*Higher-order types* are constructed from other types, and are not on their own inhabited by terms.
 
 E.g., `Set` defines an unordered collection of elements (of homogeneous type)
 
@@ -185,8 +170,7 @@ E.g., `Set` defines an unordered collection of elements (of homogeneous type)
 
 - Type `Set` has kind `Type -> Type`
 
-  - `Set` is a *type constructor*: it takes a concrete type and returns a
-    concrete type
+  - `Set` is a *type constructor*: it takes a concrete type and returns a concrete type
 
 ## Some Higher-Order Types
 
@@ -206,8 +190,7 @@ Check out the types of these values: (can you spot the type constructors?)
 
 ## Polymorphic Types
 
-Often, we want expressions that handle terms belonging to *arbitrary types*. We
-call these expressions *polymorphic*.
+Often, we want expressions that handle terms belonging to *arbitrary types*. We call these expressions *polymorphic*.
 
 We use *type variables* as placeholders for arbitrary types.
 
@@ -217,8 +200,7 @@ E.g., consider the following function type (called "identity"):
 id :: a -> a
 ```
 
-- `id` is a function which takes a term of arbitrary type `a` and returns a term
-  of the same type
+- `id` is a function which takes a term of arbitrary type `a` and returns a term of the same type
 
 ## Polymorphic Types: A Closer Look
 
@@ -228,10 +210,8 @@ Under the hood, `id` actually has the type:
 id :: forall (a :: Type). a -> a
 ```
 
-- `id` has a type parameter `a` (of kind `Type`), which it uses to *instantiate*
-  its polymorphic type
-- If we substitute `Int` for `a`, (`a ~ Int`), then `id` has the instantiated
-  type `Int -> Int`
+- `id` has a type parameter `a` (of kind `Type`), which it uses to *instantiate* its polymorphic type
+- If we substitute `Int` for `a`, (`a ~ Int`), then `id` has the instantiated type `Int -> Int`
 
 We call this *Parametric Polymorphism*
 
@@ -256,8 +236,7 @@ Box<Integer> integerBox = new Box<Integer>();
 
 ## Some Polymorphic Functions
 
-Check out the types of these polymorphic functions: `id`, `const`, `fst`,
-`repeat`
+Check out the types of these polymorphic functions: `id`, `const`, `fst`, `repeat`
 
 - Can you guess what they do?
 
@@ -273,32 +252,26 @@ The identity function *cannot do anything other than return its argument*
 id :: a -> a
 ```
 
-- *Nothing is known* about type `a` (what terms inhabit it, what operations are
-  permitted on it, etc.)
-- Parametric polymorphic functions apply a *single abstract implementation*
-  regardless of the argument type
+- *Nothing is known* about type `a` (what terms inhabit it, what operations are permitted on it, etc.)
+- Parametric polymorphic functions apply a *single abstract implementation* regardless of the argument type
 
 ## Ad Hoc Polymorphism
 
-We might want a polymorphic type to admit arbitrary types *contingent on some
-known behavior*.
+We might want a polymorphic type to admit arbitrary types *contingent on some known behavior*.
 
 E.g., Consider the (valid) tests `1 == 1` and `1.0 == 1.00` and `"hi" == "hi"`
 
 - `==` is polymorphic, but only for types that support equality testing
 
-- Each type (e.g., `Int`, `Double`, `String`) must implement `==` in a
-  type-specific manner
+- Each type (e.g., `Int`, `Double`, `String`) must implement `==` in a type-specific manner
 
-We need a mechanism that (1) classifies types by behavior, and (2) allows types
-to implement that behavior independently.
+We need a mechanism that (1) classifies types by behavior, and (2) allows types to implement that behavior independently.
 
 ## Type Classes (aka Classes)
 
 A *type class* defines a collection of related functions (known as *methods*).
 
-A type may be declared an *instance* of the type class, if it implements all the
-required methods (some may already be provided by the class).
+A type may be declared an *instance* of the type class, if it implements all the required methods (some may already be provided by the class).
 
 E.g., here's the type class `Eq`:
 
@@ -314,21 +287,17 @@ Check out the types of the `==` and `/=` functions in GHCi (using `:t`).
 
 ## Class Constraints
 
-A *class constraint* is a qualifier that constrains the type parameter(s) found
-in a polymorphic type.
+A *class constraint* is a qualifier that constrains the type parameter(s) found in a polymorphic type.
 
-E.g., `elem` uses `Eq` as a class constraint so that it can search for a
-matching element in a list:
+E.g., `elem` uses `Eq` as a class constraint so that it can search for a matching element in a list:
 
 ```haskell
 elem :: Eq a => a -> [a] -> Bool
 ```
 
-- Read: "For every type `a` *that is an instance of* `Eq`, `elem` has the type
-  &nbsp; `a -> [a] -> Bool`"
+- Read: "For every type `a` *that is an instance of* `Eq`, `elem` has the type &nbsp; `a -> [a] -> Bool`"
 
-- When `==` or `/=` are used in `elem`, the appropriate instance definition is
-  used. This is called *ad hoc polymorphism*.
+- When `==` or `/=` are used in `elem`, the appropriate instance definition is used. This is called *ad hoc polymorphism*.
 
 ## Class Extension
 
@@ -354,8 +323,7 @@ Check out these type classes (with `:i`):
 
 - `Num`, `Enum`, `Integral`, `Bounded`, `Show`
 
-You'll see the class definition itself along with a (sometimes lengthy) list of
-its instances.
+You'll see the class definition itself along with a (sometimes lengthy) list of its instances.
 
 ## Summary
 
@@ -381,5 +349,4 @@ insert :: Ord k => k -> a -> Map k a -> Map k a
 state :: MonadState s m => (s -> (a, s)) -> m a
 ```
 
-We will spend the rest of the semester studying *programs that inhabit these
-types* and others!
+We will spend the rest of the semester studying *programs that inhabit these types* and others!

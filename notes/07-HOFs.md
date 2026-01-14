@@ -1,6 +1,4 @@
 # Higher Order Functions
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -11,15 +9,13 @@ Michael Lee <lee@iit.edu>
 
 ## HOFs and Combinators
 
-A higher-order function (HOF) is a function that takes a function as a
-parameter or returns a function.
+A higher-order function (HOF) is a function that takes a function as a parameter or returns a function.
 
 (Non-HOFs are called first-order functions).
 
 They are a fundamental tool in functional programming.
 
-The term "combinator" is often used to refer to HOFs that combine or apply
-argument functions to do all their work.
+The term "combinator" is often used to refer to HOFs that combine or apply argument functions to do all their work.
 
 ## Basic combinators
 
@@ -444,8 +440,7 @@ foldl1 (/) [16,2,4]  -- 2.0
 
 ### iterate
 
-Takes a function and an initial value, and returns an infinite list
-of repeated applications of the function to the initial value.
+Takes a function and an initial value, and returns an infinite list of repeated applications of the function to the initial value.
 
 ```haskell
 iterate :: (a -> a) -> a -> [a]
@@ -459,8 +454,7 @@ take 10 $ iterate (*2) 1
 
 ### until
 
-Takes a predicate and a function, and returns the first value that
-satisfies the predicate when repeatedly applied to the function.
+Takes a predicate and a function, and returns the first value that satisfies the predicate when repeatedly applied to the function.
 
 ```haskell
 until :: (a -> Bool) -> (a -> a) -> a -> a

@@ -1,22 +1,23 @@
 # Domain-Specific Languages
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
 **Lecture 1: DSL Concepts & Design**
+
 - What is a DSL?
 - Internal vs. External DSLs
 - When to Build a DSL
 - Design Principles
 
 **Lecture 2: Shallow Embedding**
+
 - What is Shallow Embedding?
 - Building DSLs with Combinators
 - Type-Safe DSL Design
 - Case Study: Query DSL
 
 **Lecture 3: Deep Embedding & Interpreters**
+
 - What is Deep Embedding?
 - Building an AST
 - Writing Interpreters
@@ -27,10 +28,10 @@ Michael Lee <lee@iit.edu>
 
 ## What is a Domain-Specific Language?
 
-A *Domain-Specific Language (DSL)* is a programming language specialized for a
-particular domain or problem.
+A *Domain-Specific Language (DSL)* is a programming language specialized for a particular domain or problem.
 
 **Contrast with General-Purpose Languages (GPLs)**:
+
 - GPLs: Java, Python, Haskell—designed for any problem
 - DSLs: SQL, HTML, CSS, regex—designed for specific problems
 
@@ -51,21 +52,25 @@ DSLs trade generality for expressiveness in their domain.
 ## DSL Examples in the Wild
 
 **SQL**: Database queries
+
 ```sql
 SELECT name, age FROM users WHERE age > 18 ORDER BY name;
 ```
 
 **HTML**: Document structure
+
 ```html
 <div class="container"><h1>Title</h1><p>Content</p></div>
 ```
 
 **Regular Expressions**: Pattern matching
+
 ```
 ^\d{3}-\d{2}-\d{4}$
 ```
 
 **Makefile**: Build automation
+
 ```make
 target: dependencies
     command
@@ -76,6 +81,7 @@ target: dependencies
 Haskell is particularly well-suited for building DSLs:
 
 **Parser Combinators** (`Parsec`, `Megaparsec`):
+
 ```haskell
 parseDate = do
   year <- count 4 digit
@@ -91,17 +97,20 @@ Looks like a parser specification, but it's Haskell code!
 ## More Haskell DSLs
 
 **QuickCheck**: Property testing
+
 ```haskell
 prop_reverse :: [Int] -> Bool
 prop_reverse xs = reverse (reverse xs) == xs
 ```
 
 **Diagrams**: Vector graphics
+
 ```haskell
 example = circle 1 # fc blue ||| square 2 # fc red
 ```
 
 **Hakyll**: Static site generation
+
 ```haskell
 match "posts/*" $ do
   route $ setExtension "html"
@@ -111,12 +120,14 @@ match "posts/*" $ do
 ## Internal vs. External DSLs
 
 **External DSL**: A separate language with its own syntax
+
 - Examples: SQL, HTML, CSS
 - Requires a custom parser
 - Complete control over syntax
 - More work to implement
 
 **Internal DSL** (Embedded DSL): Implemented within a host language
+
 - Examples: Parsec, QuickCheck, Diagrams
 - Uses host language syntax
 - Leverages host language features (types, functions, etc.)
@@ -163,6 +174,7 @@ Build a DSL when:
 5. **Safety**: Domain constraints should be enforced
 
 Don't build a DSL when:
+
 - A library would suffice
 - The domain is too simple
 - Maintenance burden exceeds benefits
@@ -184,12 +196,14 @@ Don't build a DSL when:
 Let's design a DSL for arithmetic expressions.
 
 **What we want to express**:
+
 ```haskell
 (2 + 3) * 4
 5 - (1 + 2)
 ```
 
 **Requirements**:
+
 - Support addition, subtraction, multiplication
 - Evaluate expressions
 - Pretty-print expressions
@@ -198,11 +212,13 @@ Let's design a DSL for arithmetic expressions.
 ## Two Approaches to DSL Implementation
 
 **Shallow Embedding**:
+
 - Represent programs by their *denotation* (meaning)
 - Operations are functions that compute results directly
 - Example: An expression is a function `() -> Int`
 
 **Deep Embedding**:
+
 - Represent programs as *abstract syntax trees* (ASTs)
 - Operations build tree nodes
 - Interpretation is a separate step
@@ -213,6 +229,7 @@ We'll explore both approaches in depth!
 ## Shallow vs. Deep: A Preview
 
 **Shallow Embedding**:
+
 ```haskell
 type Expr = Int
 add x y = x + y
@@ -220,6 +237,7 @@ eval e = e
 ```
 
 **Deep Embedding**:
+
 ```haskell
 data Expr = Lit Int | Add Expr Expr
 eval (Lit n) = n
@@ -233,6 +251,7 @@ Each has different tradeoffs. Let's explore them systematically.
 Consider a DSL for regular expressions.
 
 **Domain concepts**:
+
 - Character literals: `'a'`, `'b'`
 - Alternatives: `a | b`
 - Sequencing: `ab`
@@ -240,6 +259,7 @@ Consider a DSL for regular expressions.
 - Groups: `(ab)*`
 
 **Domain operations**:
+
 - Match a string
 - Find all matches
 - Replace matches
@@ -289,12 +309,14 @@ eval (Alt r1 r2) s = eval r1 s || eval r2 s
 ## Tradeoffs: Shallow vs. Deep
 
 **Shallow Embedding**:
+
 - ✅ Simple to implement
 - ✅ Natural embedding in host language
 - ❌ Hard to inspect or transform programs
 - ❌ Only one interpretation
 
 **Deep Embedding**:
+
 - ✅ Can inspect and transform AST
 - ✅ Multiple interpretations (eval, optimize, pretty-print, etc.)
 - ❌ More boilerplate (data types, constructors)
@@ -303,11 +325,13 @@ eval (Alt r1 r2) s = eval r1 s || eval r2 s
 ## Choosing an Embedding Strategy
 
 Use **shallow embedding** when:
+
 - You need one interpretation
 - You want minimal overhead
 - You value simplicity
 
 Use **deep embedding** when:
+
 - You need multiple interpretations
 - You need to analyze/optimize programs
 - You want to transform expressions
@@ -317,8 +341,7 @@ Sometimes you can start shallow and refactor to deep later!
 
 ## Exercise: DSL Identification
 
-For each of the following, identify whether it's better suited for shallow or
-deep embedding:
+For each of the following, identify whether it's better suited for shallow or deep embedding:
 
 1. A DSL for generating random test data
 2. A DSL for SQL queries that need optimization
@@ -336,8 +359,7 @@ deep embedding:
 
 ## What is Shallow Embedding?
 
-In shallow embedding, a DSL program is represented by its *denotation*—what it
-means.
+In shallow embedding, a DSL program is represented by its *denotation*—what it means.
 
 **Key idea**: DSL operations are functions that directly compute results.
 
@@ -363,6 +385,7 @@ Let's build a simple DSL for database queries.
 **Domain**: Query a list of records
 
 **Operations**:
+
 - Select specific columns
 - Filter rows
 - Sort results
@@ -410,8 +433,7 @@ query1 :: Query Person PersonName
 query1 = selectMap getName <|> whereFilter isActive
 ```
 
-The `<|>` operator is just function composition (`.`)! This makes queries
-naturally composable.
+The `<|>` operator is just function composition (`.`)! This makes queries naturally composable.
 
 ## Query DSL: Example Usage
 
@@ -460,6 +482,7 @@ query = selectMap f <|> whereFilter p <|> selectMap g
 ```
 
 With shallow embedding, we can't:
+
 - Inspect what the query does
 - Optimize (e.g., fusing maps)
 - Generate SQL
@@ -503,8 +526,7 @@ q <|> selectAll  ==  q
 (f <|> g) <|> h  ==  f <|> (g <|> h)
 ```
 
-Laws help reason about DSL programs and enable optimizations (if we could
-inspect them!).
+Laws help reason about DSL programs and enable optimizations (if we could inspect them!).
 
 ## Type-Safe DSL Design
 
@@ -580,6 +602,7 @@ main = putStrLn page
 ```
 
 Simple and effective! But again, we can't:
+
 - Validate structure (e.g., `<p>` inside `<p>`)
 - Pretty-print with indentation
 - Transform (e.g., add CSS classes)
@@ -667,8 +690,7 @@ eval = undefined
 
 ## What is Deep Embedding?
 
-In deep embedding, a DSL program is represented as an *abstract syntax tree*
-(AST)—a data structure.
+In deep embedding, a DSL program is represented as an *abstract syntax tree* (AST)—a data structure.
 
 **Key idea**: DSL operations build tree nodes. Interpretation is separate.
 
@@ -733,6 +755,7 @@ eval (Div e1 e2) = eval e1 `div` eval e2
 ```
 
 Example:
+
 ```haskell
 expr = add (lit 2) (mul (lit 3) (lit 4))
 eval expr  -- ==> 14
@@ -897,8 +920,7 @@ data Expr a where
   If :: Expr Bool -> Expr a -> Expr a -> Expr a
 ```
 
-This prevents invalid expressions like `Add (LitBool True) (LitInt 5)` at
-compile time!
+This prevents invalid expressions like `Add (LitBool True) (LitInt 5)` at compile time!
 
 ## Type-Safe Interpreter with GADTs
 
@@ -1116,11 +1138,13 @@ Free monads separate program description from interpretation!
 ## When to Use Free Monads
 
 Free monads are useful for:
+
 - Testing (mock interpreters)
 - Multiple backends (different interpreters)
 - Analysis (inspect program structure)
 
 But they add complexity:
+
 - More boilerplate
 - Performance overhead
 - Steeper learning curve
@@ -1129,14 +1153,14 @@ Use when you need the flexibility; prefer simpler approaches otherwise.
 
 ## Comparing Embedding Styles
 
-| Feature | Shallow | Deep | Free Monad |
-|---------|---------|------|------------|
-| Implementation | Simple | Moderate | Complex |
-| Inspection | No | Yes | Yes |
-| Optimization | No | Yes | Yes |
-| Multiple Interpreters | No | Yes | Yes |
-| Overhead | Low | Medium | High |
-| Composability | Excellent | Good | Excellent |
+| Feature               | Shallow   | Deep     | Free Monad |
+| --------------------- | --------- | -------- | ---------- |
+| Implementation        | Simple    | Moderate | Complex    |
+| Inspection            | No        | Yes      | Yes        |
+| Optimization          | No        | Yes      | Yes        |
+| Multiple Interpreters | No        | Yes      | Yes        |
+| Overhead              | Low       | Medium   | High       |
+| Composability         | Excellent | Good     | Excellent  |
 
 ## Best Practices for DSL Design
 
@@ -1169,6 +1193,7 @@ When implementing a DSL, consider:
 ## Cross-Language Comparison: DSLs
 
 **Scala**: Object-oriented DSLs with traits and implicits
+
 ```scala
 // Builder pattern DSL
 val person = Person.builder
@@ -1178,6 +1203,7 @@ val person = Person.builder
 ```
 
 **Ruby**: Metaprogramming for DSLs
+
 ```ruby
 # Rake DSL
 task :deploy do
@@ -1186,6 +1212,7 @@ end
 ```
 
 **Rust**: Macros for DSLs
+
 ```rust
 // HTML macro
 html! {
@@ -1196,21 +1223,23 @@ html! {
 ## Summary: Domain-Specific Languages
 
 **Internal DSLs**: Embedded in host language
+
 - Leverage host features
 - Faster to develop
 
 **Shallow Embedding**: Represent by denotation
+
 - Simple, direct
 - Limited inspection
 
 **Deep Embedding**: Represent as AST
+
 - Multiple interpretations
 - Optimization, transformation, analysis
 
 **Key Principles**: Composability, type safety, domain-driven design
 
-DSLs let you express solutions in domain terms—a powerful tool in your
-programming toolbox!
+DSLs let you express solutions in domain terms—a powerful tool in your programming toolbox!
 
 ## Further Exploration
 

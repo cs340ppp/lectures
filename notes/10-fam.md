@@ -1,6 +1,4 @@
 # Functors, Applicatives, and Monads
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -13,21 +11,17 @@ Michael Lee <lee@iit.edu>
 
 ### Motivation: Mapping
 
-`map` is a super useful HOF --- we can apply arbitrary functions to the
-*contents* of a list without traversing the list ourselves.
+`map` is a super useful HOF --- we can apply arbitrary functions to the *contents* of a list without traversing the list ourselves.
 
 ```haskell
 map :: (a -> b) -> [a] -> [b]
 ```
 
-Wouldn't it be cool if we could *generalize* this idea of mapping an HOF over
-the contents of an arbitrary "container"?
+Wouldn't it be cool if we could *generalize* this idea of mapping an HOF over the contents of an arbitrary "container"?
 
 ### Central idea
 
-A functor is a class that supports a "mapping" operation, whereby a function can
-be applied to the value(s) contained by the functor without changing its
-structure.
+A functor is a class that supports a "mapping" operation, whereby a function can be applied to the value(s) contained by the functor without changing its structure.
 
 We can think of a functor, more generally, as a *context* for some value.
 
@@ -40,8 +34,7 @@ class Functor f where
 
 - `fmap` is the name of the mapping operation
 
-- Note that the *kind* of `f` must be `* -> *`, for `f a` and `f b` to make
-  sense in the type declaration of `fmap`.
+- Note that the *kind* of `f` must be `* -> *`, for `f a` and `f b` to make sense in the type declaration of `fmap`.
 
 ```mermaid +render +width:80%
 flowchart LR
@@ -103,8 +96,7 @@ fmap even $ Just 42 --> Just True
 
 ### The `<$>` operator
 
-Just as `$` represents "pure" function application, we can define the `<$>`
-operator to represent function application to values inside functors:
+Just as `$` represents "pure" function application, we can define the `<$>` operator to represent function application to values inside functors:
 
 ```haskell
 infixl 4 <$>
@@ -219,8 +211,7 @@ flowchart LR
 
 ### Central idea
 
-Applicative functors are augmented so as to support operations *between*
-functors.
+Applicative functors are augmented so as to support operations *between* functors.
 
 ### Definition
 
@@ -323,8 +314,7 @@ pure (+) <*> [1,2] <*> [10,20]  ==  [11,21,12,22]
 
 ### "lift"-ing functions
 
-For convenience, we can define utility functions that *lift* pure functions to
-work with values in an `Applicative` context.
+For convenience, we can define utility functions that *lift* pure functions to work with values in an `Applicative` context.
 
 ```haskell
 liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
@@ -345,13 +335,11 @@ Which is arguably more readable and expressive than:
 (+) <$> [1,2] <*> [10,20]
 ```
 
-Sometimes we talk about "lifting" or "lifted" functions, which are just pure
-functions adapted for use in other contexts.
+Sometimes we talk about "lifting" or "lifted" functions, which are just pure functions adapted for use in other contexts.
 
 ### Limitations
 
-So far, we've used `<$>` and `<*>` with functions that act on and return values
-which sit "inside" contexts.
+So far, we've used `<$>` and `<*>` with functions that act on and return values which sit "inside" contexts.
 
 But what happens when we use a function that creates its own context?
 
@@ -380,18 +368,15 @@ Just (Just 2)
 Just Nothing
 ```
 
-Weird! We want the final context to be "merged" with the result of the function
-(which generates its own context).
+Weird! We want the final context to be "merged" with the result of the function (which generates its own context).
 
 ## Monads
 
 ### Central idea
 
-A monad is a functor that represents a *computation* (aka *action*) that results
-in a value in some context.
+A monad is a functor that represents a *computation* (aka *action*) that results in a value in some context.
 
-Monad operations allow us to chain together a series of computations,
-propagating their results as needed, and updating the context.
+Monad operations allow us to chain together a series of computations, propagating their results as needed, and updating the context.
 
 ### Definition
 
@@ -406,10 +391,8 @@ class Applicative m => Monad m where
   return = pure
 ```
 
-- `>>=` : *bind* -- runs a function on the value in monad `m a`, which returns a
-  value in its own context; these contexts are merged into the result `m b`
-- `>>` : *sequence* -- chains together two monadic actions, throwing away the
-  result of the first, but merging their contexts
+- `>>=` : *bind* -- runs a function on the value in monad `m a`, which returns a value in its own context; these contexts are merged into the result `m b`
+- `>>` : *sequence* -- chains together two monadic actions, throwing away the result of the first, but merging their contexts
 - `return` is just a synonym for `pure`
 
 ### Visualization
@@ -548,9 +531,7 @@ fDivs a b c d e f = a `safeDiv` b >>= \r1 ->
                              (return (r3 * f))))
 ```
 
-`>>=` takes care of merging the contexts of the results (i.e., `Nothing` or
-`Just X`) correctly. I.e., the "monadic machinery" allows us to just focus on
-working with the results (and ignoring failure/success).
+`>>=` takes care of merging the contexts of the results (i.e., `Nothing` or `Just X`) correctly. I.e., the "monadic machinery" allows us to just focus on working with the results (and ignoring failure/success).
 
 Here's a (slightly simplified) visual:
 
@@ -702,11 +683,9 @@ Make sure you can manually *desugar* this into `>>=` and `>>` operations!
 
 ## Laws
 
-Instances of Functors, Applicatives, and Monads should conform to a handful of
-"laws", which ensure that all class instances behave in a predictable manner.
+Instances of Functors, Applicatives, and Monads should conform to a handful of "laws", which ensure that all class instances behave in a predictable manner.
 
-The compiler does not enforce these laws for us -- it is up to the programmer to
-test and ensure they are satisfied!
+The compiler does not enforce these laws for us -- it is up to the programmer to test and ensure they are satisfied!
 
 ### Functor laws
 

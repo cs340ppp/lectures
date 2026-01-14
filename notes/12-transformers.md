@@ -1,6 +1,4 @@
 # Monad Transformers
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -22,16 +20,13 @@ We've amassed a bunch of really useful monads:
 
 But there's no way to *combine* the effects of one with another!
 
-E.g., we might want to combine a `Logger` monad with a list (`[]`) monad to log
-each step taken in a non-deterministic operation.
+E.g., we might want to combine a `Logger` monad with a list (`[]`) monad to log each step taken in a non-deterministic operation.
 
-E.g., we might want to combine a `State` monad with a `Maybe` monad to model
-stateful computations that might fail.
+E.g., we might want to combine a `State` monad with a `Maybe` monad to model stateful computations that might fail.
 
 ## A naive solution
 
-We could try to combine monads by directly embedding them. E.g., for `State` and
-`Maybe`:
+We could try to combine monads by directly embedding them. E.g., for `State` and `Maybe`:
 
 ```haskell
 type StatefulMaybe a = State s (Maybe a)
@@ -39,22 +34,17 @@ type StatefulMaybe a = State s (Maybe a)
 
 What does this describe? Is this a stateful computation that might fail?
 
-- No! Failure isn't part of the monad; it's just a value in the result. The
-  state is still updated and propagated regardless of success or failure.
+- No! Failure isn't part of the monad; it's just a value in the result. The state is still updated and propagated regardless of success or failure.
 
-- We would like failure to *short-circuit* the computation: if something fails,
-  the computation should stop and the state shouldn't be updated further.
+- We would like failure to *short-circuit* the computation: if something fails, the computation should stop and the state shouldn't be updated further.
 
-We want to *compose* the effects of `State` and `Monad`, rather than just embed
-the latter in the first!
+We want to *compose* the effects of `State` and `Monad`, rather than just embed the latter in the first!
 
 ## Monad transformers
 
-A monad transformer allows you to *stack monadic effects* by wrapping one monad
-around another.
+A monad transformer allows you to *stack monadic effects* by wrapping one monad around another.
 
-- More concretely, a monad transformer takes a monad `m`, and returns a new
-  monad `t m` that adds an effect to that monad.
+- More concretely, a monad transformer takes a monad `m`, and returns a new monad `t m` that adds an effect to that monad.
 
 E.g., consider the original `State` type:
 
@@ -62,16 +52,14 @@ E.g., consider the original `State` type:
 newtype State s a = State { runState :: s -> (a, s) }
 ```
 
-The `StateT` monad transformer generalizes this by letting the output live
-inside another monad `m`:
+The `StateT` monad transformer generalizes this by letting the output live inside another monad `m`:
 
 ```haskell
 newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 ```
 
 - `m` is the *base* or *inner* monad
-- the `Functor`, `Applicative`, and `Monad` instances must carefully *thread
-  state* and also *sequence effects* from `m`
+- the `Functor`, `Applicative`, and `Monad` instances must carefully *thread state* and also *sequence effects* from `m`
 
 ## State monad transformer
 
@@ -79,8 +67,7 @@ newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 ```
 
-E.g., we could stack `StateT` with the `Maybe` monad to define a stateful
-computation that might fail, like so:
+E.g., we could stack `StateT` with the `Maybe` monad to define a stateful computation that might fail, like so:
 
 ```haskell
 pop :: StateT [a] Maybe a
@@ -103,8 +90,7 @@ instance Functor (State s) where
                                     in (f x, s')
 ```
 
-The `StateT` instance needs to do the same, while also sequencing the inner
-monad:
+The `StateT` instance needs to do the same, while also sequencing the inner monad:
 
 ```haskell
 instance (Monad m) => Functor (StateT s m) where
@@ -136,10 +122,7 @@ runStateT stackOps []   ==  Nothing
 
 ## Parsing
 
-A *parser* is a stateful computation that takes as its input state a string, and
-attempts to extract (parse) a structured value from the beginning of that
-string, and returns the remaining unconsumed input string along with the parsed
-value.
+A *parser* is a stateful computation that takes as its input state a string, and attempts to extract (parse) a structured value from the beginning of that string, and returns the remaining unconsumed input string along with the parsed value.
 
 E.g., an integer parser run on an input string:
 
@@ -372,11 +355,9 @@ evalString "(1+2"           ==  Nothing
 
 ## State & IO
 
-It is also useful to pair the `State` and `IO` monads, so that we can keep track
-of ongoing state while interacting with the real world.
+It is also useful to pair the `State` and `IO` monads, so that we can keep track of ongoing state while interacting with the real world.
 
-In order to work with functions that produce values of the inner monad, it is
-useful to have a utility to "lift" them into the `StateT` monad:
+In order to work with functions that produce values of the inner monad, it is useful to have a utility to "lift" them into the `StateT` monad:
 
 ```haskell
 lift :: Monad m => m a -> StateT s m a
@@ -386,8 +367,7 @@ lift m = StateT $ \s -> do x <- m
 
 ### Guessing game with state
 
-Using `lift`, `IO`, and `StateT`, here's an updated guessing game that keeps
-track of all guesses:
+Using `lift`, `IO`, and `StateT`, here's an updated guessing game that keeps track of all guesses:
 
 ```haskell
 guess :: Int -> StateT [Int] IO ()
@@ -440,8 +420,7 @@ type State s a = StateT s Identity a
 
 ## Control.Monad.Trans
 
-The `Control.Monad.Trans` module defines a bunch of monad transformers,
-including:
+The `Control.Monad.Trans` module defines a bunch of monad transformers, including:
 
 - `ListT`, `MaybeT`, `StateT`: the list, maybe, and state monads
 - `ReaderT`: reads from an environment/configuration
@@ -450,16 +429,13 @@ including:
 
 ## Some common stacks
 
-- `StateT s (Either e) a`: A computation that maintains mutable state and can
-  fail with an error.
+- `StateT s (Either e) a`: A computation that maintains mutable state and can fail with an error.
 
-- `ReaderT r (StateT s IO) a`: A computation with read-only access to a
-  configuration, mutable state, and IO effects.
+- `ReaderT r (StateT s IO) a`: A computation with read-only access to a configuration, mutable state, and IO effects.
 
 - `ExceptT e IO a`: A computation that can throw errors during IO operations.
 
-- `MaybeT IO` : A computation that can fail silently (no error message) during
-  IO.
+- `MaybeT IO` : A computation that can fail silently (no error message) during IO.
 
 ### Rules of thumb
 
@@ -474,12 +450,9 @@ including:
 
 ### ReaderT r (ExceptT e IO) a
 
-A computation that has configuration (`Reader`), errors (`Except`), and `IO`
-effects.
+A computation that has configuration (`Reader`), errors (`Except`), and `IO` effects.
 
-E.g., could be used to build web API request handlers: access configuration
-(e.g., database connections), do IO (e.g., DB queries), and fail with meaningful
-errors. Very common for web frameworks.
+E.g., could be used to build web API request handlers: access configuration (e.g., database connections), do IO (e.g., DB queries), and fail with meaningful errors. Very common for web frameworks.
 
 Convenience type and associated definitions:
 

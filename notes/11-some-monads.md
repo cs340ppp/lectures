@@ -1,6 +1,4 @@
 # Some Monads
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -27,9 +25,7 @@ So that:
 (*) <$> [2,4] <*> [5,6,7]  ==  [10,12,14,20,24,28]
 ```
 
-In the context of applicative functors, a list represents a *non-deterministic*
-context -- i.e., multiple *possible* values. And so a computation with a list
-explores *every possible result*.
+In the context of applicative functors, a list represents a *non-deterministic* context -- i.e., multiple *possible* values. And so a computation with a list explores *every possible result*.
 
 ### Monad instance
 
@@ -58,8 +54,7 @@ do article   <- ["The", "A", "This"]
 
 ## Logger
 
-A `Logger` type is a container for a value (of arbitrary type) that also
-includes a list of *log messages*.
+A `Logger` type is a container for a value (of arbitrary type) that also includes a list of *log messages*.
 
 ```haskell
 data Logger a = Logger { loggerVal  :: a
@@ -117,8 +112,7 @@ Logger (2*) ["Two times"] <*> Logger 42 ["The ultimate answer"]
 
 ### Monad instance
 
-- `>>=` must take care to combine the log messages of the incoming logger with
-  the newly created one
+- `>>=` must take care to combine the log messages of the incoming logger with the newly created one
 
 Can you implement the `Logger` Monad instance?
 
@@ -165,11 +159,9 @@ do x <- logVal 1
 
 ## State
 
-Functions in Haskell cannot be stateful -- i.e., they cannot create or modify
-any external state (e.g., global variables).
+Functions in Haskell cannot be stateful -- i.e., they cannot create or modify any external state (e.g., global variables).
 
-But we can model a stateful computation as a function that takes an *input
-state* and returns both a result and an updated *output state*.
+But we can model a stateful computation as a function that takes an *input state* and returns both a result and an updated *output state*.
 
 ```mermaid +render +width:70%
 flowchart LR
@@ -198,8 +190,7 @@ data State s a = State { runState :: s -> (a, s) }
 
 ### Some stateful functions
 
-We can define stateful functions that represent stack operations, where the
-state is a list representing the contents of the stack.
+We can define stateful functions that represent stack operations, where the state is a list representing the contents of the stack.
 
 Here's `pop`:
 
@@ -226,8 +217,7 @@ peek = ?
 
 ### Functor instance
 
-`fmap` for `State` takes some function `f` and applies it to the *result* of the
-stateful computation. To do this requires that we run the stateful computation!
+`fmap` for `State` takes some function `f` and applies it to the *result* of the stateful computation. To do this requires that we run the stateful computation!
 
 ```haskell
 instance Functor (State s) where
@@ -246,10 +236,7 @@ runState (even <$> pop) [3,4,5]  ==  (False, [4,5])
 
 ### Applicative instance
 
-`<*>` needs to extract a function from one stateful computation to apply it to a
-value in another stateful computation. To do this, we need to build another
-stateful computation that *sequences* its state through both of the original
-computations.
+`<*>` needs to extract a function from one stateful computation to apply it to a value in another stateful computation. To do this, we need to build another stateful computation that *sequences* its state through both of the original computations.
 
 Can you implement the `State` Applicative instance?
 
@@ -279,8 +266,7 @@ instance Monad (State s) where
   State st >>= f = undefined
 ```
 
-With it, we can chain together stack operations, with the monad methods taking
-care of propagating the underlying stack state:
+With it, we can chain together stack operations, with the monad methods taking care of propagating the underlying stack state:
 
 ```haskell
 stackFoo :: State [Int] ()
@@ -297,9 +283,7 @@ runState stackFoo [2,4,3,5]  ==  ((), [23])
 
 ### Random numbers
 
-The `System.Random` module defines a class with methods that return
-*pseudo-random* values for its instances (which include `Char`, `Integer`,
-`Double`, etc.):
+The `System.Random` module defines a class with methods that return *pseudo-random* values for its instances (which include `Char`, `Integer`, `Double`, etc.):
 
 ```haskell
 class Random a where
@@ -307,16 +291,13 @@ class Random a where
   randomR  :: RandomGen g => (a, a) -> g -> (a, g)
 ```
 
-`RandomGen` is a class that describes methods for a *pseudo-random number
-generator* (PRNG). We can obtain a value of `StdGen`, which is an instance of
-`RandomGen`, by passing an integer *seed* to:
+`RandomGen` is a class that describes methods for a *pseudo-random number generator* (PRNG). We can obtain a value of `StdGen`, which is an instance of `RandomGen`, by passing an integer *seed* to:
 
 ```haskell
 mkStdGen :: Int -> StdGen
 ```
 
-Here's how we can generate a random number in the range [0,100]. We get back a
-value and a PRNG with an updated seed to use for additional random values.
+Here's how we can generate a random number in the range [0,100]. We get back a value and a PRNG with an updated seed to use for additional random values.
 
 ```haskell
 randomR (0,100) $ mkStdGen 1  ==  (27, StdGen ...)
@@ -334,13 +315,11 @@ let g        = mkStdGen 1
 in (r1,r2,r3)                         ==  (27,98,35)
 ```
 
-But this pattern of sequencing computations while carrying through updated state
-is a perfect application for the `State` monad!
+But this pattern of sequencing computations while carrying through updated state is a perfect application for the `State` monad!
 
 ### Random numbers (cont.)
 
-These functions build `State` monads which use `StdGen`s as their internal
-state.
+These functions build `State` monads which use `StdGen`s as their internal state.
 
 ```haskell
 randInRange :: (Int,Int) -> State StdGen Int
@@ -373,9 +352,7 @@ put :: a -> State a ()
 put s = State $ \_ -> ((), s)
 ```
 
-Using them, we can write programs that access and modify state (within the
-monad) arbitrarily. Use this carefully, as it has the same potential pitfalls as
-regular imperative code!
+Using them, we can write programs that access and modify state (within the monad) arbitrarily. Use this carefully, as it has the same potential pitfalls as regular imperative code!
 
 ```haskell
 tick :: State Int ()
@@ -393,20 +370,15 @@ statefulComp = do i <- get
 
 ## Digression: `newtype`
 
-The `State` type, as we defined it earlier, is really just a wrapper around an
-existing type:
+The `State` type, as we defined it earlier, is really just a wrapper around an existing type:
 
 ```haskell
 data State s a = State { runState :: s -> (a, s) }
 ```
 
-But we can't declare it as a type synonym using `type`, because we want to be
-able to ascribe *new semantics* to its values (and not all `s -> (a, s)` values
-in general).
+But we can't declare it as a type synonym using `type`, because we want to be able to ascribe *new semantics* to its values (and not all `s -> (a, s)` values in general).
 
-The problem: `data` introduces an extra "box" around its values, which allocates
-extra memory and makes pattern matching slower, even though the new type is
-identical to an existing type.
+The problem: `data` introduces an extra "box" around its values, which allocates extra memory and makes pattern matching slower, even though the new type is identical to an existing type.
 
 ### Solution: `newtype`
 
@@ -416,18 +388,15 @@ Solution: `newtype` declaration
 newtype State s a = State { runState :: s -> (a, s) }
 ```
 
-`newtype` can replace `data` in situations where the type has *exactly one value
-constructor with exactly one field inside it*.
+`newtype` can replace `data` in situations where the type has *exactly one value constructor with exactly one field inside it*.
 
-A `newtype` declared type is distinct from its field type at compile-time, but
-*identical in representation at run-time*.
+A `newtype` declared type is distinct from its field type at compile-time, but *identical in representation at run-time*.
 
 - This makes it much cheaper than `data`.
 
 ### Distinct instances for a single type
 
-Haskell doesn't allow overlapping instances for the same type (e.g., `Maybe` can
-only have one `Functor`, `Applicative`, and `Monad` instance).
+Haskell doesn't allow overlapping instances for the same type (e.g., `Maybe` can only have one `Functor`, `Applicative`, and `Monad` instance).
 
 But we can wrap an existing type in `newtype` to accomplish this. E.g.,
 
@@ -450,22 +419,17 @@ show $ Quiet 10  == "(10)"
 show $ Loud 10   ==  "<<9+1>>"
 ```
 
-`newtype` allows us to define *new semantics* for an existing type, without
-creating *new structure* (which `data` always does)!
+`newtype` allows us to define *new semantics* for an existing type, without creating *new structure* (which `data` always does)!
 
 ## IO
 
-The `IO` monad, used to encapsulate all I/O operations in Haskell, is
-conceptually very similar to the `State` monad, with `RealWorld` replacing the
-polymorphic state:
+The `IO` monad, used to encapsulate all I/O operations in Haskell, is conceptually very similar to the `State` monad, with `RealWorld` replacing the polymorphic state:
 
 ```haskell
 newtype IO a = IO (RealWorld -> (a, RealWorld))
 ```
 
-But we cannot directly "run" an `IO` computation (as we do with `runState` on
-the `State` monad). In a compiled Haskell program, this only happens in one
-place:
+But we cannot directly "run" an `IO` computation (as we do with `runState` on the `State` monad). In a compiled Haskell program, this only happens in one place:
 
 ```haskell
 main :: IO ()
@@ -473,8 +437,7 @@ main :: IO ()
 
 - when we execute a compiled program, `main` is "run" on the `RealWorld`.
 
-- When we evaluate an `IO a` expression in GHCi, it will be immediately
-  executed.
+- When we evaluate an `IO a` expression in GHCi, it will be immediately executed.
 
 There is *no way* to "unwrap" an `IO` monad (e.g., with pattern matching)
 
@@ -498,11 +461,9 @@ readLn     :: Read a => IO a
 readFile   :: FilePath -> IO String
 ```
 
-Output functions are of type `IO ()` --- i.e., they represent computations that
-affect the `RealWorld`, but don't return a useful value.
+Output functions are of type `IO ()` --- i.e., they represent computations that affect the `RealWorld`, but don't return a useful value.
 
-Input functions place their results *inside* an `IO` context, and the only way
-of accessing that data is via `<$>`, `<*>`, `>>=`, etc.
+Input functions place their results *inside* an `IO` context, and the only way of accessing that data is via `<$>`, `<*>`, `>>=`, etc.
 
 ### Using IO actions
 
@@ -525,9 +486,7 @@ guess n = do putStr "Enter a guess: "
 
 ### Monadic utilities
 
-There are plenty of useful utilities defined in `Control.Monad` that we can use
-with `IO` (and any other monad). Here are some that chain together lists of
-monads:
+There are plenty of useful utilities defined in `Control.Monad` that we can use with `IO` (and any other monad). Here are some that chain together lists of monads:
 
 ```haskell
 sequence :: Monad m => [m a] -> m [a]
@@ -543,8 +502,7 @@ forM :: Monad m => [a] -> (a -> m b) -> m [b]
 forM xs f = sequence $ map f xs
 ```
 
-There are also variations that return `m ()` (which run monads purely for side
-effects): `sequence_`, `replicateM_`, `forM_`, etc.
+There are also variations that return `m ()` (which run monads purely for side effects): `sequence_`, `replicateM_`, `forM_`, etc.
 
 ### Monadic utilities (cont.)
 
@@ -567,12 +525,9 @@ greetAll names = forM_ names $ \name -> do
 
 ### I/O and `IO`
 
-In a compiled Haskell program, the *only way to perform I/O* is to sequence an
-`IO` monad from the `main` function (directly or indirectly). This is because
-`main` is the only function to receive a `RealWorld` value.
+In a compiled Haskell program, the *only way to perform I/O* is to sequence an `IO` monad from the `main` function (directly or indirectly). This is because `main` is the only function to receive a `RealWorld` value.
 
-Any function that performs I/O must return an `IO` monad. Arbitrary functions
-*cannot* perform I/O!
+Any function that performs I/O must return an `IO` monad. Arbitrary functions *cannot* perform I/O!
 
 Consider:
 
@@ -582,20 +537,14 @@ foo = let _ = putStrLn "hello world!"
       in 42
 ```
 
-Does `foo` manage to "secretly" perform output in a pure function? Why or why
-not?
+Does `foo` manage to "secretly" perform output in a pure function? Why or why not?
 
 ### `IO` as the functional/imperative barrier
 
-Code that performs I/O is inherently *stateful* and *unpredictable*, in contrast
-to purely functional code, which is *stateless* and *referentially transparent*.
+Code that performs I/O is inherently *stateful* and *unpredictable*, in contrast to purely functional code, which is *stateless* and *referentially transparent*.
 
-The `IO` monad clearly and explictly demarcates the line between *imperative*
-code (which interacts with the outside world) and *pure* code.
+The `IO` monad clearly and explictly demarcates the line between *imperative* code (which interacts with the outside world) and *pure* code.
 
-The vast majority of Haskell code remains *purely functional*. Pure functions
-can still work with impure values by using operations like `fmap`, `<*>`, and
-`>>=`.
+The vast majority of Haskell code remains *purely functional*. Pure functions can still work with impure values by using operations like `fmap`, `<*>`, and `>>=`.
 
-This elegant separation of side-effect from logic is made possible by the
-abstract, expressive power of *Functors*, *Applicatives*, and *Monads*!
+This elegant separation of side-effect from logic is made possible by the abstract, expressive power of *Functors*, *Applicatives*, and *Monads*!

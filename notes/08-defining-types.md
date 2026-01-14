@@ -1,6 +1,4 @@
 # Defining Types
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -67,15 +65,13 @@ enumerate xs = zip [1..] xs
 
 ## *Algebraic* data types
 
-"`data`" defines a new *algebraic data type* with at least one *value
-constructor* (aka *data constructor*)
+"`data`" defines a new *algebraic data type* with at least one *value constructor* (aka *data constructor*)
 
 ```haskell
 data TypeName = Constructor1 | Constructor2 | ...
 ```
 
-Each constructor can take arguments, which describe the types of values that
-must be passed to the constructor when calling it.
+Each constructor can take arguments, which describe the types of values that must be passed to the constructor when calling it.
 
 ```haskell
 data TypeName = Constructor1 ArgType1
@@ -151,8 +147,7 @@ area (Rectangle l w) = l*w
 
 ### Why "*Algebraic*"?
 
-An algebraic type is based on the *sum* and *product* of constituent values and
-types.
+An algebraic type is based on the *sum* and *product* of constituent values and types.
 
 Here are two sum types:
 
@@ -187,8 +182,7 @@ How many values make up `T4`?
 
 ## Record syntax
 
-Aternate way of defining algebraic types -- allows us to specify attribute
-names, and automatically generates "getter" functions:
+Aternate way of defining algebraic types -- allows us to specify attribute names, and automatically generates "getter" functions:
 
 ```haskell
 data Student = Student { firstName :: String
@@ -246,8 +240,7 @@ innerMostMessage (Doll _ d)         = innerMostMessage d
 
 ## Parametric types
 
-A type definition can depend on one or more type variables. Such types are
-called *parametric* (or *parameterized*) types.
+A type definition can depend on one or more type variables. Such types are called *parametric* (or *parameterized*) types.
 
 E.g., a "universal" box type:
 
@@ -255,8 +248,7 @@ E.g., a "universal" box type:
 data UniversalBox a = UBox a
 ```
 
-The type name, `UniversalBox`, is not itself a full type specification. It takes
-type as an argument to specialize it; we therefore call it a *type constructor*.
+The type name, `UniversalBox`, is not itself a full type specification. It takes type as an argument to specialize it; we therefore call it a *type constructor*.
 
 E.g., here are some `UniversalBox` values:
 
@@ -280,15 +272,11 @@ mapBox f (UBox x) = UBox $ f x
 
 ## *Kinds* of Types
 
-Type constructors vary in the number of type parameters they have. We categorize
-types by *kind*, which indicate what their type constructors can take as
-arguments.
+Type constructors vary in the number of type parameters they have. We categorize types by *kind*, which indicate what their type constructors can take as arguments.
 
-- When a type constructor takes no parameters, we say that it is a *concrete
-  type*, denoted kind `*`.
+- When a type constructor takes no parameters, we say that it is a *concrete type*, denoted kind `*`.
 
-- A type constructor that takes one concrete type in order to yield a fully
-  specialized type is denoted kind `* -> *`
+- A type constructor that takes one concrete type in order to yield a fully specialized type is denoted kind `* -> *`
 
 What are the *kinds* of the following types? (use `:k` in ghci)
 
@@ -314,8 +302,7 @@ A `Maybe a` represents either an `a` value or the *absence of an `a` value*.
 data Maybe a = Just a | Nothing
 ```
 
-This gives us a well-typed mechanism for returning a value from a function that
-represents a result or the *lack of a result* (e.g., a failed computation).
+This gives us a well-typed mechanism for returning a value from a function that represents a result or the *lack of a result* (e.g., a failed computation).
 
 E.g., consider:
 
@@ -334,8 +321,7 @@ find p (x:xs) | p x = Just x
 data Either a b = Left a | Right b
 ```
 
-We typically use the `Left` constructor to represent error values, and the
-`Right` constructor to hold correct (*right*) values.
+We typically use the `Left` constructor to represent error values, and the `Right` constructor to hold correct (*right*) values.
 
 ```haskell
 find' :: (a -> Bool) -> [a] -> Either String a
@@ -347,8 +333,7 @@ find' p (x:xs) | p x = Right x
 
 ### Lists
 
-The built-in list is just another parametric type! We can define our own list
-type like this (`:-` is a value constructor):
+The built-in list is just another parametric type! We can define our own list type like this (`:-` is a value constructor):
 
 ```haskell
 infixr 5 :-

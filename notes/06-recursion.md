@@ -1,6 +1,4 @@
 # Recursion
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -139,8 +137,7 @@ E.g., `combinations [1,2,3]` produces:
 
 ### Knapsack problem
 
-Given a list of items (value,weight) and a weight capacity, find the maximum
-value that can be carried:
+Given a list of items (value,weight) and a weight capacity, find the maximum value that can be carried:
 
 ```haskell
 knapsack :: (Ord a, Num a) => a -> [(a,a)] -> a
@@ -230,8 +227,7 @@ Generates new subproblems (in size/structure)
 1. Start with a guess g -- for sqrt x, try g=x/2
 2. Is g^2 = x?
    - if so, we're done
-3. Improve the guess; g'=(g + x/g)/2
-   (if g is too low this will increase it, and vice versa)
+3. Improve the guess; g'=(g + x/g)/2 (if g is too low this will increase it, and vice versa)
 
 ```haskell
 sqrt' :: Double -> Double

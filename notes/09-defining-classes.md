@@ -1,6 +1,4 @@
 # Defining and Using Type Classes
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -28,8 +26,7 @@ class Explosive a where
   explode :: a -> [a]
 ```
 
-- all types `a` that are instances of `Explosive` must implement `explode`,
-  which takes that type and returns a list of that type.
+- all types `a` that are instances of `Explosive` must implement `explode`, which takes that type and returns a list of that type.
 
 Here is an `Int` instance of `Explosive`:
 
@@ -135,8 +132,7 @@ How would you make `List` an instance of `Eq`?
 data List a = a :- (List a) | Null
 ```
 
-Making a polymorphic type an instance of a class may require adding constraints
-to the instance declaration.
+Making a polymorphic type an instance of a class may require adding constraints to the instance declaration.
 
 ```haskell
 instance Eq a => Eq (List a) where
@@ -146,8 +142,7 @@ instance Eq a => Eq (List a) where
   _         == _         = False
 ```
 
-- `Eq a => Eq (List a)` means `List a` can be an instance of `Eq` only if `a` is
-  an instance of `Eq`.
+- `Eq a => Eq (List a)` means `List a` can be an instance of `Eq` only if `a` is an instance of `Eq`.
 
 ## Example: `Ord`
 
@@ -223,12 +218,9 @@ What functionality does this give us?
 
 ## Automatic derivation
 
-The Haskell compiler can automagically derive instances of the classes `Eq`,
-`Ord`, `Enum`, `Bounded`, `Show`, and `Read` for data types (which meet certain
-criteria) by using the `deriving` clause.
+The Haskell compiler can automagically derive instances of the classes `Eq`, `Ord`, `Enum`, `Bounded`, `Show`, and `Read` for data types (which meet certain criteria) by using the `deriving` clause.
 
-This makes it easier to compare, enumerate, print/parse data when the default
-behavior is sufficient.
+This makes it easier to compare, enumerate, print/parse data when the default behavior is sufficient.
 
 E.g.,
 
@@ -237,5 +229,4 @@ data Suit = Diamond | Club | Heart | Spade
             deriving (Eq, Ord, Enum, Bounded, Show, Read)
 ```
 
-- Play around with this type in GHCi to see what behavior we get for free!
-  (`:i`-ing the classes will help)
+- Play around with this type in GHCi to see what behavior we get for free! (`:i`-ing the classes will help)

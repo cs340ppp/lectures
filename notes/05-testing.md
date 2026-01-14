@@ -1,6 +1,4 @@
 # Testing
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
@@ -99,8 +97,7 @@ mySpec =
 
 ## Property-Based Testing
 
-Instead of individual examples, we specify *properties* that should hold for
-*all* inputs, and the test framework *generates* tests for us.
+Instead of individual examples, we specify *properties* that should hold for *all* inputs, and the test framework *generates* tests for us.
 
 ```haskell
 -- Property: reversing twice gives back the original
@@ -222,8 +219,7 @@ prop_removeAtLength n xs =
 
 **Problem:** What if `n` is negative? Or `n >= length xs`?
 
-We need a *precondition* — a requirement that must be true for the property to
-be meaningful.
+We need a *precondition* — a requirement that must be true for the property to be meaningful.
 
 #### Conditional Properties with `==>`
 
@@ -372,8 +368,7 @@ removeAt
     +++ OK, passed 100 tests; 456 discarded.
 ```
 
-"456 discarded" means QuickCheck tried many random `n` and `xs` pairs where `n`
-wasn't a valid index. It still found 100 valid cases to test.
+"456 discarded" means QuickCheck tried many random `n` and `xs` pairs where `n` wasn't a valid index. It still found 100 valid cases to test.
 
 But discarding 456 tests to find 100 valid ones is wasteful...
 
@@ -440,8 +435,7 @@ removeAt
 Both `==>` and `forAll` give us control over test cases
 
 - `==>` is simple but may discard many cases
-- `forAll` generates only valid test cases, and gives us full control over test
-  distribution
+- `forAll` generates only valid test cases, and gives us full control over test distribution
 
 ### Step 9: Add More Properties
 
@@ -458,8 +452,7 @@ prop_removeAtCorrect =
     in removed == before ++ after
 ```
 
-This checks that we're actually removing the right element and keeping
-everything else in order.
+This checks that we're actually removing the right element and keeping everything else in order.
 
 ### Step 10: Add Example-Based Tests
 

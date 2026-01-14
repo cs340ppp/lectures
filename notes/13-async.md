@@ -1,21 +1,22 @@
 # Asynchronous & Concurrent Programming
-## CS 340: Programming Patterns and Paradigms
-Michael Lee <lee@iit.edu>
 
 ## Agenda
 
 **Lecture 1: Async Basics**
+
 - Why Asynchronous Programming?
 - Blocking vs. Non-blocking Operations
 - Introduction to the Async Library
 - Basic Async Operations
 
 **Lecture 2: Async Patterns & STM**
+
 - Concurrent Composition
 - Exception Handling
 - Software Transactional Memory
 
 **Lecture 3: Concurrent Programming Patterns**
+
 - Producer-Consumer Patterns
 - Work Queues and Thread Pools
 - Best Practices and Common Pitfalls
@@ -25,15 +26,14 @@ Michael Lee <lee@iit.edu>
 ## Why Asynchronous Programming?
 
 Consider a program that needs to:
+
 - Fetch data from multiple web services
 - Process files while monitoring user input
 - Handle multiple client connections
 
-**The problem**: Traditional sequential code blocks on I/O operations, wasting
-CPU time while waiting.
+**The problem**: Traditional sequential code blocks on I/O operations, wasting CPU time while waiting.
 
-**The solution**: Asynchronous programming allows other work to proceed while
-waiting for I/O.
+**The solution**: Asynchronous programming allows other work to proceed while waiting for I/O.
 
 ## The Cost of Blocking
 
@@ -54,13 +54,13 @@ These operations are *independent* but execute sequentially. We can do better!
 
 Before we dive in, let's clarify two related concepts:
 
-**Concurrency**: Multiple computations making progress (possibly interleaved on
-a single core)
+**Concurrency**: Multiple computations making progress (possibly interleaved on a single core)
+
 - About *structure* and *composition*
 - Example: A server handling multiple requests
 
-**Parallelism**: Multiple computations executing simultaneously on different
-cores
+**Parallelism**: Multiple computations executing simultaneously on different cores
+
 - About *performance* and *speedup*
 - Example: Processing chunks of a large dataset
 
@@ -70,8 +70,7 @@ We'll focus primarily on concurrency, though the patterns overlap.
 
 Haskell provides several approaches to concurrency:
 
-1. **Lightweight threads**: `forkIO` creates cheap threads (implemented by the
-   runtime)
+1. **Lightweight threads**: `forkIO` creates cheap threads (implemented by the runtime)
 2. **Async library**: High-level abstractions for async computations
 3. **STM**: Software Transactional Memory for safe shared state
 4. **Par/Strategies**: Deterministic parallelism (we won't cover these)
@@ -94,8 +93,7 @@ wait   :: Async a -> IO a
 cancel :: Async a -> IO ()
 ```
 
-An `Async a` represents a computation running in the background that will
-eventually produce a value of type `a`.
+An `Async a` represents a computation running in the background that will eventually produce a value of type `a`.
 
 ## Basic Async Example
 
@@ -151,8 +149,7 @@ fetchUrls urls = do
   mapM wait asyncs
 ```
 
-Instead of 6 seconds sequential, we get ~2 seconds (limited by the slowest
-request).
+Instead of 6 seconds sequential, we get ~2 seconds (limited by the slowest request).
 
 ## Checking Async Status
 
@@ -163,6 +160,7 @@ poll :: Async a -> IO (Maybe (Either SomeException a))
 ```
 
 Returns:
+
 - `Nothing` if still running
 - `Just (Right result)` if completed successfully
 - `Just (Left exception)` if failed with exception
@@ -232,8 +230,7 @@ waitBoth :: Async a -> Async b -> IO (a, b)
 
 ## Using `race`
 
-`race` runs two computations concurrently and returns the result of whichever
-finishes first, cancelling the other.
+`race` runs two computations concurrently and returns the result of whichever finishes first, cancelling the other.
 
 ```haskell
 getUserInput :: IO String
@@ -266,8 +263,7 @@ fetchAndProcess = do
   saveToFile combined
 ```
 
-If either computation throws an exception, the other is cancelled and the
-exception is re-thrown.
+If either computation throws an exception, the other is cancelled and the exception is re-thrown.
 
 ## Generalizing: `mapConcurrently`
 
@@ -284,8 +280,7 @@ fetchAll :: [URL] -> IO [Response]
 fetchAll urls = mapConcurrently httpGet urls
 ```
 
-This is like `mapM` but runs all actions concurrently. Much more efficient than
-sequential `mapM` for I/O-bound operations!
+This is like `mapM` but runs all actions concurrently. Much more efficient than sequential `mapM` for I/O-bound operations!
 
 ## Live Coding: Concurrent Web Scraping
 
@@ -358,8 +353,7 @@ x <- readIORef counter        x <- readIORef counter
 writeIORef counter (x + 1)    writeIORef counter (x + 1)
 ```
 
-**Race condition**: Both might read the same value and write the same
-incremented value, losing one update!
+**Race condition**: Both might read the same value and write the same incremented value, losing one update!
 
 We need a way to ensure *atomic* operations on shared state.
 
@@ -367,8 +361,7 @@ We need a way to ensure *atomic* operations on shared state.
 
 STM provides *composable* atomic operations on shared memory.
 
-Key idea: Operations in an STM transaction appear to execute atomically with
-respect to all other transactions.
+Key idea: Operations in an STM transaction appear to execute atomically with respect to all other transactions.
 
 ```haskell
 import Control.Concurrent.STM
@@ -409,8 +402,7 @@ demo = do
 
 ## STM Composability
 
-The power of STM is *composability*. Transactions can be built from smaller
-transactions:
+The power of STM is *composability*. Transactions can be built from smaller transactions:
 
 ```haskell
 transfer :: TVar Int -> TVar Int -> Int -> STM ()
@@ -446,17 +438,18 @@ withdraw account amount = do
 ## STM vs. Locks
 
 **Traditional locks** (e.g., `MVar`, mutexes):
+
 - Prone to deadlock
 - Not composable (can't safely combine operations)
 - Error-prone (forget to unlock, lock wrong order)
 
 **STM**:
+
 - No deadlocks (transactions automatically retry)
 - Composable (combine transactions safely)
 - Automatic rollback on exceptions
 
-**Tradeoff**: STM can be slower than locks for uncontended operations, but safer
-and more maintainable.
+**Tradeoff**: STM can be slower than locks for uncontended operations, but safer and more maintainable.
 
 ## Live Coding: Bank Account Simulation
 
@@ -516,6 +509,7 @@ dequeue :: Queue a -> STM a  -- Should retry if empty
 A common concurrent pattern: producers generate data, consumers process it.
 
 We need a *bounded buffer* between them:
+
 - Producers block when buffer is full
 - Consumers block when buffer is empty
 
@@ -574,10 +568,10 @@ main = do
 
 ## Work Queue Pattern
 
-Similar to producer-consumer, but tasks may produce more tasks (tree-like
-computation).
+Similar to producer-consumer, but tasks may produce more tasks (tree-like computation).
 
 Example: Web crawler
+
 - Start with seed URLs (initial tasks)
 - Fetching a page may discover new URLs (new tasks)
 - Workers grab tasks from queue and process them
@@ -641,6 +635,7 @@ main = do
 How do we know when all work is done?
 
 Work is complete when:
+
 1. The queue is empty, AND
 2. No workers are active
 
@@ -688,8 +683,7 @@ main = do
 
 ## Async Best Practices
 
-1. **Prefer `async` over `forkIO`**: Better exception handling and resource
-   management
+1. **Prefer `async` over `forkIO`**: Better exception handling and resource management
 
 2. **Use `bracket` patterns**: Ensure cleanup even if exceptions occur
    ```haskell
@@ -699,8 +693,7 @@ main = do
      return result
    ```
 
-3. **Be careful with `cancel`**: Cancellation is asynchronous; wait if you need
-   to ensure it's done
+3. **Be careful with `cancel`**: Cancellation is asynchronous; wait if you need to ensure it's done
 
 4. **Use STM for shared state**: More maintainable than low-level primitives
 
@@ -708,14 +701,11 @@ main = do
 
 ## Common Pitfalls
 
-1. **Forgetting to `wait`**: Async computations are cancelled when garbage
-   collected
+1. **Forgetting to `wait`**: Async computations are cancelled when garbage collected
 
-2. **Space leaks with `concurrently`**: Both results are kept in memory even if
-   only one is needed
+2. **Space leaks with `concurrently`**: Both results are kept in memory even if only one is needed
 
-3. **STM transactions too large**: Keep transactions short; I/O in STM blocks
-   retrying
+3. **STM transactions too large**: Keep transactions short; I/O in STM blocks retrying
 
 4. **Neglecting exceptions**: Async code can hide exceptions; always handle them
 
@@ -747,6 +737,7 @@ parMapReduce mapFn reduceFn items = undefined
 ```
 
 Hints:
+
 - Use `chunksOf` to split the list
 - Use `mapConcurrently` to process chunks
 - Apply `reduceFn` to combined results
@@ -763,27 +754,30 @@ Hints:
 We focused on `async` for I/O concurrency. For CPU-bound parallelism, consider:
 
 **Par monad** (`Control.Monad.Par`):
+
 - Deterministic parallelism
 - Pure computations only
 - Explicit data dependencies
 
 **Evaluation Strategies** (`Control.Parallel.Strategies`):
+
 - Separates algorithm from parallelism
 - `parMap`, `parList`, etc.
 - Works with lazy evaluation
 
-Both offer more control for pure parallel computations, but `async` is more
-flexible for I/O.
+Both offer more control for pure parallel computations, but `async` is more flexible for I/O.
 
 ## When to Use Concurrency
 
 Use concurrency when:
+
 - Performing multiple I/O operations
 - Building servers or event-driven systems
 - Coordinating independent tasks
 - Improving responsiveness (background tasks)
 
 Don't use concurrency when:
+
 - Sequential code is simpler and fast enough
 - Overhead exceeds benefits
 - Correctness is too hard to ensure
@@ -832,10 +826,12 @@ async fn fetch_urls(urls: Vec<String>) -> Vec<String> {
 ## Summary: Async/Concurrency
 
 **Async library**: High-level primitives for concurrent I/O
+
 - `async`, `wait`, `cancel`
 - `race`, `concurrently`, `mapConcurrently`
 
 **STM**: Composable atomic transactions
+
 - `TVar`, `atomically`, `retry`, `orElse`
 - Eliminates many concurrency bugs
 
@@ -843,5 +839,4 @@ async fn fetch_urls(urls: Vec<String>) -> Vec<String> {
 
 **Best practices**: Use async over forkIO, bound concurrency, handle exceptions
 
-These tools let you write concurrent programs that are both efficient and
-maintainable!
+These tools let you write concurrent programs that are both efficient and maintainable!
