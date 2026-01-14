@@ -1,10 +1,8 @@
----
-title: "Monad Transformers"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Monad Transformers
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - The problem
 - Monad transformers
@@ -12,9 +10,7 @@ author: "Michael Lee <lee@iit.edu>"
 - Parsing
 - Other transformers and monad stacks
 
----
-
-# The problem
+## The problem
 
 We've amassed a bunch of really useful monads:
 
@@ -24,11 +20,7 @@ We've amassed a bunch of really useful monads:
 - `State`
 - `IO`
 
-<!-- pause -->
-
 But there's no way to *combine* the effects of one with another!
-
-<!-- pause -->
 
 E.g., we might want to combine a `Logger` monad with a list (`[]`) monad to log
 each step taken in a non-deterministic operation.
@@ -36,9 +28,7 @@ each step taken in a non-deterministic operation.
 E.g., we might want to combine a `State` monad with a `Maybe` monad to model
 stateful computations that might fail.
 
----
-
-# A naive solution
+## A naive solution
 
 We could try to combine monads by directly embedding them. E.g., for `State` and
 `Maybe`:
@@ -49,22 +39,16 @@ type StatefulMaybe a = State s (Maybe a)
 
 What does this describe? Is this a stateful computation that might fail?
 
-<!-- pause -->
-
-- No! Failure isn’t part of the monad; it’s just a value in the result. The
+- No! Failure isn't part of the monad; it's just a value in the result. The
   state is still updated and propagated regardless of success or failure.
 
 - We would like failure to *short-circuit* the computation: if something fails,
   the computation should stop and the state shouldn't be updated further.
 
-<!-- pause -->
-
 We want to *compose* the effects of `State` and `Monad`, rather than just embed
 the latter in the first!
 
----
-
-# Monad transformers
+## Monad transformers
 
 A monad transformer allows you to *stack monadic effects* by wrapping one monad
 around another.
@@ -72,15 +56,11 @@ around another.
 - More concretely, a monad transformer takes a monad `m`, and returns a new
   monad `t m` that adds an effect to that monad.
 
-<!-- pause -->
-
 E.g., consider the original `State` type:
 
 ```haskell
 newtype State s a = State { runState :: s -> (a, s) }
 ```
-
-<!-- pause -->
 
 The `StateT` monad transformer generalizes this by letting the output live
 inside another monad `m`:
@@ -93,9 +73,7 @@ newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 - the `Functor`, `Applicative`, and `Monad` instances must carefully *thread
   state* and also *sequence effects* from `m`
 
----
-
-# State monad transformer
+## State monad transformer
 
 ```haskell
 newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
@@ -114,11 +92,7 @@ push :: a -> StateT [a] Maybe ()
 push x = StateT $ \s -> Just ((), x:s)
 ```
 
----
-
-# State monad transformer
-
-## Functor/Applicative/Monad instances
+### Functor/Applicative/Monad instances
 
 Here's the original `State` instance of `Functor`:
 
@@ -128,8 +102,6 @@ instance Functor (State s) where
   fmap f (State st) = State $ \s -> let (x, s') = st s
                                     in (f x, s')
 ```
-
-<!-- pause -->
 
 The `StateT` instance needs to do the same, while also sequencing the inner
 monad:
@@ -141,13 +113,9 @@ instance (Monad m) => Functor (StateT s m) where
                                           return (f x, s')
 ```
 
-<!-- pause -->
-
 Can you implement the `Applicative` and `Monad` instances of `StateT`?
 
----
-
-# State monad transformer
+### Using StateT
 
 With working instances, we can now do:
 
@@ -166,9 +134,7 @@ runStateT stackOps []   ==  Nothing
 - In this example, `Maybe` handles failure (e.g., popping from an empty stack)
 - `StateT` keeps track of the stack across steps
 
----
-
-# Parsing
+## Parsing
 
 A *parser* is a stateful computation that takes as its input state a string, and
 attempts to extract (parse) a structured value from the beginning of that
@@ -188,17 +154,13 @@ flowchart LR
     parser --> out
 ```
 
-<!-- pause -->
-
 A parser is just a `State` + `Maybe` monad stack!
 
 ```haskell
 type Parser a = StateT String Maybe a
 ```
 
----
-
-# Parsing
+### A single character parser
 
 A single character parser:
 
@@ -210,8 +172,6 @@ char = StateT $ \s -> case s of ""     -> Nothing
 parse = runStateT -- for legibility
 ```
 
-<!-- pause -->
-
 So we can do:
 
 ```haskell
@@ -220,9 +180,7 @@ parse char ""  ==  Nothing
 parse char "hello"  ==  Just ('h',"ello")
 ```
 
----
-
-# Parsing
+### Chaining parsers
 
 Because `Parser`s are monads, we can write:
 
@@ -236,11 +194,7 @@ threeChars = do c1 <- char
 parse threeChars "hello"  ==  Just (('h','e','l'),"lo")
 ```
 
----
-
-# Parsing
-
-## Basic parsers
+### Basic parsers
 
 Parsing a character using a predicate:
 
@@ -252,8 +206,6 @@ sat p = do c <- char
 fail :: Parser a
 fail = StateT $ \s -> Nothing
 ```
-
-<!-- pause -->
 
 So we can do:
 
@@ -267,11 +219,7 @@ parse (sat isDigit)  "aloha"  ==  Nothing
 parse (sat isDigit)  "123"    ==  Just ('1',"23")
 ```
 
----
-
-# Parsing
-
-## Basic parsers
+### String parser
 
 We can use `sat` to write some more parsers:
 
@@ -283,8 +231,6 @@ string (x:xs) = do sat (== x)
                    return (x:xs)
 ```
 
-<!-- pause -->
-
 So we can do:
 
 ```haskell
@@ -293,11 +239,7 @@ parse (string "hello") "hello world"  ==  Just ("hello"," world")
 parse (string "hello") "aloha world"  ==  Nothing
 ```
 
----
-
-# Parsing
-
-## Utility functions
+### Utility functions
 
 We can implement some utility functions that combine parsers:
 
@@ -308,15 +250,13 @@ p <|> q = StateT $ \s -> case parse p s of
                            Just x  -> Just x
 
 oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = do x <- p 
+oneOrMore p = do x <- p
                  xs <- oneOrMore p <|> return []
                  return $ x:xs
 
 zeroOrMore :: Parser a -> Parser [a]
 zeroOrMore p = oneOrMore p <|> return []
 ```
-
-<!-- pause -->
 
 So we can do:
 
@@ -328,11 +268,7 @@ parse (oneOrMore $ sat isDigit) "123hi"     ==  Just ("123","hi")
 parse (zeroOrMore $ sat isSpace) "  bye!"   ==  Just ("  ","bye!")
 ```
 
----
-
-# Parsing
-
-## More parsers
+### More parsers
 
 And now we can implement more complex parsers!
 
@@ -351,8 +287,6 @@ symbol :: String -> Parser String
 symbol s = token (string s)
 ```
 
-<!-- pause -->
-
 So we can do:
 
 ```haskell
@@ -363,11 +297,7 @@ parse (token int) "  123 + x"      ==  Just (123,"+ x")
 parse (symbol "foo") "  foo = 10"  ==  Just ("foo","= 10")
 ```
 
----
-
-# Parsing
-
-## Expression parser
+### Expression parser
 
 Let's write a program to parse and evaluate simple arithmetic expressions.
 
@@ -377,8 +307,6 @@ Start with a data type for representing expressions:
 data Expr = Lit Int | Add Expr Expr | Sub Expr Expr
 ```
 
-<!-- pause -->
-
 So an expression like `(5 + 10) - (20 - 2)` would be represented as:
 
 ```haskell
@@ -386,11 +314,7 @@ Sub (Add (Lit 5) (Lit 10))
     (Sub (Lit 20) (Lit 2))
 ```
 
----
-
-# Parsing
-
-## Expression parser
+### Expression parser (cont.)
 
 Can you finish implementing the parser?
 
@@ -418,11 +342,7 @@ parse expr "42+x" == Just (Lit 42,"+x")
 parse expr "(1+2" == Nothing
 ```
 
----
-
-# Parsing
-
-## Expression parser
+### Evaluator
 
 Now the evaluator:
 
@@ -432,8 +352,6 @@ eval (Lit i)     = i
 eval (Add e1 e2) = eval e1 + eval e2
 eval (Sub e1 e2) = eval e1 - eval e2
 ```
-
-<!-- pause -->
 
 Can you implement `evalString`?
 
@@ -452,14 +370,10 @@ evalString "42+x"           ==  Nothing
 evalString "(1+2"           ==  Nothing
 ```
 
----
-
-# State & IO
+## State & IO
 
 It is also useful to pair the `State` and `IO` monads, so that we can keep track
 of ongoing state while interacting with the real world.
-
-<!-- pause -->
 
 In order to work with functions that produce values of the inner monad, it is
 useful to have a utility to "lift" them into the `StateT` monad:
@@ -470,9 +384,7 @@ lift m = StateT $ \s -> do x <- m
                            return (x, s)
 ```
 
----
-
-# State & IO
+### Guessing game with state
 
 Using `lift`, `IO`, and `StateT`, here's an updated guessing game that keeps
 track of all guesses:
@@ -498,15 +410,11 @@ guess n = do lift $ putStrLn "Enter a guess"
                  guess n
 ```
 
----
-
-# Plain State Monad?
+## Plain State Monad?
 
 Now that we have `StateT`, do we still need `State`?
 
 Can we create a plain `State` monad from the `StateT` monad transformer?
-
-<!-- pause -->
 
 We need an inner monad that doesn't add any additional semantics:
 
@@ -524,17 +432,13 @@ instance Monad Identity where
   Identity x >>= f = f x
 ```
 
-<!-- pause -->
-
 And now we can trivially define `State` as:
 
 ```haskell
 type State s a = StateT s Identity a
 ```
 
----
-
-# Control.Monad.Trans
+## Control.Monad.Trans
 
 The `Control.Monad.Trans` module defines a bunch of monad transformers,
 including:
@@ -544,11 +448,7 @@ including:
 - `WriterT`: maintains a log of values
 - `ExceptT`: helps handle errors during a computation
 
----
-
-# Some common stacks
-
-<!-- incremental_lists: true -->
+## Some common stacks
 
 - `StateT s (Either e) a`: A computation that maintains mutable state and can
   fail with an error.
@@ -561,22 +461,18 @@ including:
 - `MaybeT IO` : A computation that can fail silently (no error message) during
   IO.
 
-<!-- incremental_lists: false -->
-
-## Rules of thumb
+### Rules of thumb
 
 - The outermost monad describes the *primary shape* of the computation.
-  - If it’s mainly configuration-driven, put `ReaderT` on the outside.
-  - If it’s mainly errorable, put `ExceptT` on the outside.
+  - If it's mainly configuration-driven, put `ReaderT` on the outside.
+  - If it's mainly errorable, put `ExceptT` on the outside.
   - If state is only an internal detail, `StateT` should be buried deeper.
   - `IO` almost always sits at the bottom.
 - Use `lift` (or variants) to lift inner monads up
 
----
+## Example stack
 
-# Example stack
-
-## ReaderT r (ExceptT e IO) a
+### ReaderT r (ExceptT e IO) a
 
 A computation that has configuration (`Reader`), errors (`Except`), and `IO`
 effects.
@@ -584,8 +480,6 @@ effects.
 E.g., could be used to build web API request handlers: access configuration
 (e.g., database connections), do IO (e.g., DB queries), and fail with meaningful
 errors. Very common for web frameworks.
-
-<!-- pause -->
 
 Convenience type and associated definitions:
 
@@ -599,11 +493,7 @@ data Config = Config { configApiKey :: String }
 data AppError = MissingApiKey | IOError String
 ```
 
----
-
-# Example stack
-
-## ReaderT r (ExceptT e IO) a
+### Using the stack
 
 Some functions that use the stack:
 
@@ -617,16 +507,12 @@ fetchData = do
     else liftIO (performApiCall key) -- API call at IO level
 ```
 
-<!-- pause -->
-
 A runner for the entire stack:
 
 ```haskell
 runApp :: Config -> AppM a -> IO (Either AppError a)
 runApp cfg app = runExceptT (runReaderT app cfg)
 ```
-
-<!-- pause -->
 
 Which we can call like this:
 

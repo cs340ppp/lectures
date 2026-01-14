@@ -1,10 +1,8 @@
----
-title: "Testing"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Testing
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - Definition & Motivation
 - Test-Driven Development (TDD)
@@ -14,22 +12,18 @@ author: "Michael Lee <lee@iit.edu>"
 - TDD: A Complete Example
 - Test coverage
 
----
-
-# What is Testing?
+## What is Testing?
 
 A *test* verifies that some aspect of a system works to specification.
 
-## Why test?
+### Why test?
 
 - Catch bugs early
 - Prevent future regressions
 - Document expected behavior
 - Build confidence in correctness
 
----
-
-# Testing Frameworks
+## Testing Frameworks
 
 Testing frameworks are software libraries that provide:
 
@@ -38,9 +32,7 @@ Testing frameworks are software libraries that provide:
 - Clear reporting of failures
 - Coverage analysis
 
----
-
-# Test-Driven Development (TDD)
+## Test-Driven Development (TDD)
 
 Write tests *first*, then write code to make them pass.
 
@@ -51,18 +43,14 @@ TDD workflow:
 3. Refactor code while keeping tests passing
 4. Repeat
 
----
-
-## Benefits of TDD
+### Benefits of TDD
 
 - Forces you to think about requirements and API design upfront
 - Ensures all code is testable
 - Provides fast feedback loop
 - Prevents you from doing more than is necessary
 
----
-
-# Approaches to Testing
+## Approaches to Testing
 
 *Static testing* - Performed by the compiler
 
@@ -75,9 +63,7 @@ TDD workflow:
 
 *Integration/System testing* - Testing components working together
 
----
-
-## Example-based tests with Hspec
+### Example-based tests with Hspec
 
 `Hspec` helps us write test specifications in Haskell:
 
@@ -86,21 +72,19 @@ import Test.Hspec
 import Test.QuickCheck
 
 mySpec :: Spec
-mySpec = 
+mySpec =
   describe "myFunction" $ do  -- `describe` groups tests
     it "handles the base case" $  -- `it` denotes a test case
-      myFunction [] `shouldBe` 0 
+      myFunction [] `shouldBe` 0
     it "works on known examples" $ do
       myFunction [1,2,3] `shouldBe` 6  -- `shouldBe` et al set
       myFunction [5] `shouldBe` 5      --  test expectations
     it "satisfies important properties" $
-      property prop_myFunction  -- `property` denotes a 
+      property prop_myFunction  -- `property` denotes a
                                 --  property-based test
 ```
 
----
-
-## Pros/Cons of Example-Based Testing
+### Pros/Cons of Example-Based Testing
 
 **Pros:**
 
@@ -113,9 +97,7 @@ mySpec =
 - Tedious to write comprehensive test suites (AI can help!)
 - Hard to test functions with large input spaces
 
----
-
-# Property-Based Testing
+## Property-Based Testing
 
 Instead of individual examples, we specify *properties* that should hold for
 *all* inputs, and the test framework *generates* tests for us.
@@ -133,9 +115,7 @@ QuickCheck (a Haskell property-based testing library) will:
 3. Report any failures
 4. Try to "shrink" failures to minimal counterexamples
 
----
-
-# Why Property-Based Testing?
+## Why Property-Based Testing?
 
 Explores the input space more *thoroughly*:
 
@@ -152,9 +132,7 @@ Documents behavior at a *higher level*:
 - Use examples for specific edge cases and clarity
 - Use properties for general correctness
 
----
-
-# What Makes a Good Property?
+## What Makes a Good Property?
 
 Good properties are:
 
@@ -162,9 +140,7 @@ Good properties are:
 2. *Meaningful*: Should actually test something important
 3. *Independent*: Shouldn't depend on implementation details
 
----
-
-# Common Property Patterns
+## Common Property Patterns
 
 - *Inverse functions*: `f (g x) == x`
 - *Invariants*: Something that doesn't change (e.g., `length` after `sort`)
@@ -172,9 +148,7 @@ Good properties are:
 - *Commutativity*: Order doesn't matter (e.g., `x + y == y + x`)
 - *Reference implementation*: Compare against a known-correct implementation
 
----
-
-## E.g., Inverse Functions
+### E.g., Inverse Functions
 
 Functions that "undo" each other should round-trip:
 
@@ -190,9 +164,7 @@ prop_c2f2c c = abs (f2c (c2f c) - c) < 0.0001
 
 This is one of the most common and useful property patterns!
 
----
-
-## E.g., Invariants
+### E.g., Invariants
 
 Some properties of the output shouldn't change:
 
@@ -206,9 +178,7 @@ prop_sortPreserves :: [Int] -> Bool
 prop_sortPreserves xs = sort (sort xs) == sort xs
 ```
 
----
-
-## E.g., Algebraic Laws
+### E.g., Algebraic Laws
 
 Test mathematical properties and relationships:
 
@@ -222,9 +192,7 @@ prop_sumCommutes :: [Int] -> Bool
 prop_sumCommutes xs = sum xs == sum (reverse xs)
 ```
 
----
-
-# TDD: A Complete Example
+## TDD: A Complete Example
 
 Let's walk through developing a list function using TDD:
 
@@ -240,9 +208,7 @@ Examples:
 - `removeAt 1 [1,2,3]` → `[1,3]`
 - `removeAt 2 [1,2,3]` → `[1,2]`
 
----
-
-## Step 1: Write Property-Based Tests First
+### Step 1: Write Property-Based Tests First
 
 Before writing any code, let's think: what should always be true?
 
@@ -250,50 +216,38 @@ Before writing any code, let's think: what should always be true?
 
 ```haskell
 prop_removeAtLength :: Int -> [Int] -> Bool
-prop_removeAtLength n xs = 
+prop_removeAtLength n xs =
   length (removeAt n xs) == length xs - 1
 ```
 
-<!-- pause -->
-
 **Problem:** What if `n` is negative? Or `n >= length xs`?
-
-<!-- pause -->
 
 We need a *precondition* — a requirement that must be true for the property to
 be meaningful.
 
----
-
-### Conditional Properties with `==>`
+#### Conditional Properties with `==>`
 
 QuickCheck's `==>` operator lets us add preconditions:
 
 ```haskell
 prop_removeAtLength :: Int -> [Int] -> Property
-prop_removeAtLength n xs = 
-  (n >= 0 && n < length xs) ==> 
+prop_removeAtLength n xs =
+  (n >= 0 && n < length xs) ==>
     length (removeAt n xs) == length xs - 1
 ```
-
-<!-- pause -->
 
 Left side of `==>` is the precondition; Right side is the property to test
 
 - `==>` returns a `Property`
 
----
-
-### How `==>` Works
+#### How `==>` Works
 
 ```haskell
 prop_removeAtLength :: Int -> [Int] -> Property
-prop_removeAtLength n xs = 
-  (n >= 0 && n < length xs) ==> 
+prop_removeAtLength n xs =
+  (n >= 0 && n < length xs) ==>
     length (removeAt n xs) == length xs - 1
 ```
-
-<!-- pause -->
 
 When QuickCheck runs this:
 
@@ -302,25 +256,19 @@ When QuickCheck runs this:
 3. If `False`: discards this test case and tries another
 4. If `True`: checks the property `length (removeAt n xs) == length xs - 1`
 
----
-
-## Step 2: Write Our Test Spec
+### Step 2: Write Our Test Spec
 
 ```haskell
 removeAtSpec :: Spec
-removeAtSpec = 
+removeAtSpec =
   describe "removeAt" $ do
     it "shortens the list by 1" $
       property prop_removeAtLength
 ```
 
-<!-- pause -->
-
 This test will fail because we haven't written `removeAt` yet!
 
----
-
-## Step 3: Initial Implementation (Buggy!)
+### Step 3: Initial Implementation (Buggy!)
 
 First attempt — seems reasonable:
 
@@ -329,21 +277,15 @@ removeAt :: Int -> [a] -> [a]
 removeAt n xs = take n xs ++ drop n xs
 ```
 
-<!-- pause -->
-
 Logic:
 
 - `take n xs` gets elements before index n
 - `drop n xs` skips to index n
 - Concatenate them together
 
-<!-- pause -->
-
 Seems right... let's run the tests!
 
----
-
-## Step 4: Properties Fail Immediately!
+### Step 4: Properties Fail Immediately!
 
 ```
 removeAt
@@ -353,11 +295,7 @@ removeAt
     [0,1]
 ```
 
-<!-- pause -->
-
 The property caught a bug right away!
-
-<!-- pause -->
 
 QuickCheck:
 
@@ -365,9 +303,7 @@ QuickCheck:
 - Found one that failed (maybe `removeAt 3 [2,5,1,8,0,9,4]`)
 - **Shrunk** it to *minimal counterexample*: `n=1`, `xs=[0,1]`
 
----
-
-## Step 5: Understanding the Failure
+### Step 5: Understanding the Failure
 
 The minimal counterexample is `removeAt 1 [0,1]`:
 
@@ -378,23 +314,15 @@ removeAt 1 [0,1]
   = [0,1]
 ```
 
-<!-- pause -->
-
 - Original list: `[0,1]` has length 2
 - After "removing": `[0,1]` has length 2
 - Expected: length 1
 
-<!-- pause -->
-
 The bug is clear: `drop 1` keeps the element at index 1, it doesn't skip it!
-
-<!-- pause -->
 
 **We need:** `drop (n+1)` not `drop n`
 
----
-
-### The Power of Shrinking
+#### The Power of Shrinking
 
 Without shrinking, we might have seen:
 
@@ -406,8 +334,6 @@ Without shrinking, we might have seen:
 
 Debugging this is harder!
 
-<!-- pause -->
-
 With shrinking:
 
 ```
@@ -418,9 +344,7 @@ With shrinking:
 
 The minimal example makes the bug obvious!
 
----
-
-## Step 6: Fix the Bug
+### Step 6: Fix the Bug
 
 Correct implementation:
 
@@ -428,8 +352,6 @@ Correct implementation:
 removeAt :: Int -> [a] -> [a]
 removeAt n xs = take n xs ++ drop (n+1) xs
 ```
-
-<!-- pause -->
 
 Now let's verify:
 
@@ -440,13 +362,9 @@ removeAt 1 [0,1]
   = [0]
 ```
 
-<!-- pause -->
-
 Length is now 1 — correct!
 
----
-
-## Step 7: Property Passes!
+### Step 7: Property Passes!
 
 ```
 removeAt
@@ -454,28 +372,20 @@ removeAt
     +++ OK, passed 100 tests; 456 discarded.
 ```
 
-<!-- pause -->
-
 "456 discarded" means QuickCheck tried many random `n` and `xs` pairs where `n`
 wasn't a valid index. It still found 100 valid cases to test.
-
-<!-- pause -->
 
 But discarding 456 tests to find 100 valid ones is wasteful...
 
 Can we do better?
 
----
-
-## Step 8: Better Test Generation with `forAll`
-
-<!-- pause -->
+### Step 8: Better Test Generation with `forAll`
 
 Solution: Use `forAll` to generate only valid test cases:
 
 ```haskell
 prop_removeAtLength' :: Property
-prop_removeAtLength' = 
+prop_removeAtLength' =
   forAll (listOf1 arbitrary) $ \xs ->
   forAll (choose (0, length xs - 1)) $ \n ->
     length (removeAt n xs) == length xs - 1
@@ -483,22 +393,16 @@ prop_removeAtLength' =
 
 No precondition needed — all generated cases are valid!
 
----
-
-### How `forAll` Works
+#### How `forAll` Works
 
 ```haskell
 forAll generator $ \value -> property
 ```
 
-<!-- pause -->
-
 `forAll` takes two arguments:
 
 1. A *generator* that produces random values
 2. A *function* from the generated value to a property
-
-<!-- pause -->
 
 Common generators:
 
@@ -507,19 +411,15 @@ Common generators:
 - `listOf1 arbitrary` — non-empty list
 - `elements [...]` — random element from a list
 
----
-
-### Our Usage of `forAll`
+#### Our Usage of `forAll`
 
 ```haskell
 prop_removeAtLength' :: Property
-prop_removeAtLength' = 
+prop_removeAtLength' =
   forAll (listOf1 arbitrary) $ \xs ->
   forAll (choose (0, length xs - 1)) $ \n ->
     length (removeAt n xs) == length xs - 1
 ```
-
-<!-- pause -->
 
 Reading this:
 
@@ -527,9 +427,7 @@ Reading this:
 2. Generate a valid index in [0, length-1], call it `n`
 3. Check that `length (removeAt n xs) == length xs - 1`
 
----
-
-### `forAll` Result and Summary
+#### `forAll` Result and Summary
 
 Result: No discarded tests!
 
@@ -545,15 +443,13 @@ Both `==>` and `forAll` give us control over test cases
 - `forAll` generates only valid test cases, and gives us full control over test
   distribution
 
----
-
-## Step 9: Add More Properties
+### Step 9: Add More Properties
 
 **Property 2:** The element at index n should be gone
 
 ```haskell
 prop_removeAtCorrect :: Property
-prop_removeAtCorrect = 
+prop_removeAtCorrect =
   forAll (listOf1 arbitrary) $ \xs ->
   forAll (choose (0, length xs - 1)) $ \n ->
     let removed = removeAt n xs
@@ -562,40 +458,34 @@ prop_removeAtCorrect =
     in removed == before ++ after
 ```
 
-<!-- pause -->
-
 This checks that we're actually removing the right element and keeping
 everything else in order.
 
----
-
-## Step 10: Add Example-Based Tests
+### Step 10: Add Example-Based Tests
 
 Now that our properties pass, let's add some example tests for documentation:
 
 ```haskell
 removeAtSpec :: Spec
-removeAtSpec = 
+removeAtSpec =
   describe "removeAt" $ do
     it "shortens the list by 1" $
       property prop_removeAtLength'
-    
+
     it "removes the correct element" $
       property prop_removeAtCorrect
-    
+
     it "removes from single-element list" $
       removeAt 0 [42] `shouldBe` ([] :: [Int])
-    
+
     it "removes first element" $
       removeAt 0 [1,2,3] `shouldBe` [2,3]
-    
+
     it "removes last element" $
       removeAt 2 [1,2,3] `shouldBe` [1,2]
 ```
 
----
-
-# Property-First TDD Workflow
+## Property-First TDD Workflow
 
 1. **Think about invariants:** What should always be true?
 2. **Write properties:** Express those invariants as tests
@@ -603,17 +493,13 @@ removeAtSpec =
 4. **Debug:** Let shrinking guide you to bugs
 5. **Add examples:** Document specific cases
 
-<!-- pause -->
-
 This is more powerful than:
 
 1. Write examples
 2. Implement
 3. Hope you covered all cases
 
----
-
-# Test Coverage
+## Test Coverage
 
 How much of our code is actually tested?
 
@@ -627,9 +513,7 @@ Generates a report showing:
 - Which patterns/branches are exercised
 - Which code is unreachable (dead code)
 
----
-
-# Coverage Example
+## Coverage Example
 
 After running tests with coverage, you might see:
 
@@ -641,44 +525,30 @@ After running tests with coverage, you might see:
 100% function coverage (5/5)
 ```
 
-<!-- pause -->
-
 This tells you:
 
 - Some expressions never evaluated
 - Some guards never taken
 - But all functions are at least called
 
-<!-- pause -->
-
 Use this to identify untested code paths!
 
----
-
-# Best Practices
+## Best Practices
 
 **Start simple:**
 
 - Begin with inverse functions and invariants
 - Add more complex properties as you gain experience
 
-<!-- pause -->
-
 **Combine approaches:**
 
 - Use examples for specific edge cases
 - Use properties for general correctness
 
-<!-- pause -->
-
 **Let failures guide you:**
 
 - Shrunk counterexamples reveal the essence of bugs
 - Don't ignore what QuickCheck finds!
-
----
-
-# Best Practices (cont.)
 
 **Think about properties while coding:**
 
@@ -686,15 +556,11 @@ Use this to identify untested code paths!
 - "What are the invariants?"
 - "Is there a reference implementation?"
 
-<!-- pause -->
-
 **Write tests first (TDD):**
 
 - Properties document expected behavior
 - Tests catch bugs early
 - Refactoring is safer
-
-<!-- pause -->
 
 **Aim for high coverage:**
 

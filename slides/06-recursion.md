@@ -1,10 +1,8 @@
----
-title: "Recursion"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Recursion
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - Common patterns of recursion:
   - Iteration & Reduction
@@ -14,9 +12,7 @@ author: "Michael Lee <lee@iit.edu>"
   - Divide & Conquer
   - Generative recursion
 
----
-
-# Recursion
+## Recursion
 
 Recursion is the fundamental mechanism for iteration in functional programming.
 
@@ -26,25 +22,17 @@ Recursion is the fundamental mechanism for iteration in functional programming.
   - *Base case(s)*: conditions where recursion stops
   - *Recursive case(s)*: where the function calls itself with "smaller" inputs
 
----
-
-# A. Iteration & Reduction
+## A. Iteration & Reduction
 
 Processing elements one by one
 
----
-
-# A. Iteration & Reduction
-
-## Sum up the elements of a list
+### Sum up the elements of a list
 
 ```haskell
 sum' :: Num a => [a] -> a
 sum' [] = 0                    -- base case
 sum' (x:xs) = x + sum' xs      -- recursive case
 ```
-
-<!-- pause -->
 
 E.g., trace the evaluation of `sum' [1,2,3]`:
 
@@ -59,19 +47,13 @@ sum' [1,2,3]
 = 6
 ```
 
----
-
-# A. Iteration & Reduction
-
-## A classic!
+### A classic!
 
 ```haskell
 factorial :: Integer -> Integer
 factorial 0 = 1
 factorial n = n * factorial (n-1)
 ```
-
-<!-- pause -->
 
 E.g., trace the evaluation of `factorial 5`:
 
@@ -86,31 +68,21 @@ factorial 5
 = 120
 ```
 
----
-
-# B. Filtering
+## B. Filtering
 
 Selective iteration/reduction
 
----
-
-# B. Filtering
-
-## Sum only the positive numbers in a list
+### Sum only the positive numbers in a list
 
 ```haskell
 sumPositives :: Integral a => [a] -> a
 sumPositives [] = 0
-sumPositives (x:xs) 
+sumPositives (x:xs)
   | x > 0     = x + sumPositives xs
   | otherwise = sumPositives xs
 ```
 
----
-
-# B. Filtering
-
-## Palindromes are strings that read the same forwards as backwards
+### Palindromes are strings that read the same forwards as backwards
 
 ```haskell
 palindromes :: [String] -> [String]
@@ -120,17 +92,11 @@ palindromes (s:ss)
   | otherwise      = palindromes ss
 ```
 
----
-
-# C. Accumulation
+## C. Accumulation
 
 Computing/Passing information "down" while recursing
 
----
-
-# C. Accumulation
-
-## Reverse a list
+### Reverse a list
 
 ```haskell
 reverse' :: [a] -> [a]
@@ -138,8 +104,6 @@ reverse' xs = rev xs []
   where rev [] acc     = acc
         rev (x:xs) acc = rev xs (x:acc)
 ```
-
-<!-- pause -->
 
 E.g., trace the evaluation of `reverse' [1,2,3]`:
 
@@ -152,28 +116,20 @@ reverse' [1,2,3]
 = [3,2,1]
 ```
 
----
-
-# D. Combinations & Permutations
+## D. Combinations & Permutations
 
 Essential combinatorics
 
----
-
-# D. Combinations & Permutations
-
-## Generate all combinations of elements in a list
+### Generate all combinations of elements in a list
 
 Order doesn't matter:
 
 ```haskell
 combinations :: [a] -> [[a]]
 combinations [] = [[]]
-combinations (x:xs) = combinations xs 
+combinations (x:xs) = combinations xs
                       ++ map (x:) (combinations xs)
 ```
-
-<!-- pause -->
 
 E.g., `combinations [1,2,3]` produces:
 
@@ -181,13 +137,9 @@ E.g., `combinations [1,2,3]` produces:
 [[],[3],[2],[2,3],[1],[1,3],[1,2],[1,2,3]]
 ```
 
----
+### Knapsack problem
 
-# D. Combinations & Permutations
-
-## Knapsack problem
-
-Given a list of items (value,weight) and a weight capacity, find the maximum 
+Given a list of items (value,weight) and a weight capacity, find the maximum
 value that can be carried:
 
 ```haskell
@@ -199,29 +151,21 @@ knapsack cap ((v,w):items)
                     (v + knapsack (cap-w) items)
 ```
 
-<!-- pause -->
-
 E.g., `knapsack 10 [(60,6), (90,8), (50,2), (40,2)]` = 150
 
----
-
-# D. Combinations & Permutations
-
-## Generate all permutations of elements in a list
+### Generate all permutations of elements in a list
 
 Order matters:
 
 ```haskell
 permutations :: [a] -> [[a]]
 permutations [] = [[]]
-permutations xs = [x:ps | x <- xs, 
+permutations xs = [x:ps | x <- xs,
                           ps <- permutations (delete x xs)]
   where delete y [] = []
         delete y (z:zs) | y == z    = zs
                         | otherwise = z : delete y zs
 ```
-
-<!-- pause -->
 
 E.g., `permutations [1,2,3]` produces:
 
@@ -229,19 +173,13 @@ E.g., `permutations [1,2,3]` produces:
 [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
 ```
 
----
-
-# D. Combinations & Permutations
-
-## Generate all palindromes from a given string
+### Generate all palindromes from a given string
 
 ```haskell
 allPalindromes :: String -> [String]
-allPalindromes s = nub [p | p <- permutations s, 
+allPalindromes s = nub [p | p <- permutations s,
                             p == reverse p]
 ```
-
-<!-- pause -->
 
 E.g., `allPalindromes "aab"` produces:
 
@@ -251,17 +189,11 @@ E.g., `allPalindromes "aab"` produces:
 
 Actually produces just `["aba"]` when `nub` removes duplicates.
 
----
-
-# E. Divide & Conquer
+## E. Divide & Conquer
 
 Break a problem into smaller ones of the same structure
 
----
-
-# E. Divide & Conquer
-
-## Another classic!
+### Another classic!
 
 ```haskell
 fib :: Int -> Integer
@@ -270,19 +202,11 @@ fib 1 = 1
 fib n = fib (n-1) + fib (n-2)
 ```
 
-<!-- pause -->
-
 This is elegant but *very* inefficient! We recompute the same values many times.
-
-<!-- pause -->
 
 Solution: memoization (caching results)
 
----
-
-# E. Divide & Conquer
-
-## Sort by splitting the list in half and merging the sorted halves
+### Sort by splitting the list in half and merging the sorted halves
 
 ```haskell
 mergesort :: Ord a => [a] -> [a]
@@ -297,17 +221,11 @@ mergesort xs = merge (mergesort left) (mergesort right)
           | otherwise = y : merge (x:xs) ys
 ```
 
----
-
-# F. Generative recursion
+## F. Generative recursion
 
 Generates new subproblems (in size/structure)
 
----
-
-# F. Generative recursion
-
-## Newton's method for finding square roots
+### Newton's method for finding square roots
 
 1. Start with a guess g -- for sqrt x, try g=x/2
 2. Is g^2 = x?
@@ -318,18 +236,14 @@ Generates new subproblems (in size/structure)
 ```haskell
 sqrt' :: Double -> Double
 sqrt' x = improve (x/2)
-  where improve g 
+  where improve g
           | abs (g*g - x) < 0.0001 = g
           | otherwise = improve ((g + x/g) / 2)
 ```
 
-<!-- pause -->
-
 E.g., `sqrt' 16` converges quickly to 4.0
 
----
-
-# Summary
+## Summary
 
 Common recursion patterns:
 

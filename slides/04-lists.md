@@ -1,25 +1,19 @@
----
-title: "Lists"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Lists
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - The List Type & List Constructors
 - Functions Over Lists & Structural Recursion
 - "Infinite" Lists & Lazy Evaluation
 - List Comprehensions
 
----
-
-# The List Type
+## The List Type
 
 A list is a *homogeneous*, *ordered* collection of zero or more values
 
 - I.e., all elements must be of the same (possibly polymorphic) type
-
-<!-- pause -->
 
 A list has type `[t]`, where `t` is the type of its elements. E.g.,
 
@@ -33,9 +27,7 @@ A list has type `[t]`, where `t` is the type of its elements. E.g.,
 
 - `[a]` denotes a list containing elements of polymorphic type `a`
 
----
-
-# List Constructors
+## List Constructors
 
 There are two *value constructors* for the list type:
 
@@ -48,9 +40,7 @@ There are two *value constructors* for the list type:
 
   - `:` is *right-associative*; e.g., 1 : 2 : [] === 1 : (2 : [])
 
----
-
-## E.g., List Construction
+### E.g., List Construction
 
 ```haskell
 intList :: [Int]
@@ -67,9 +57,7 @@ counts :: [[Int]]
 counts = (1 : []) : (1 : 2 : []) : (1 : 2 : 3 : []) : []
 ```
 
----
-
-## Syntactic Sugar for List Construction
+### Syntactic Sugar for List Construction
 
 Instead of using `:` to manually build lists element-by-element, Haskell
 provides *syntactic sugar* to simplify/prettify code:
@@ -84,9 +72,7 @@ Under the hood, the "sugared" forms are translated to the long form for us!
 
 - It is still important/useful to understand how '`:`' works
 
----
-
-## E.g., List Construction with Syntactic Sugar
+### E.g., List Construction with Syntactic Sugar
 
 ```haskell
 intList :: [Int]
@@ -103,9 +89,7 @@ counts :: [[Int]]
 counts = [[1], [1,2], [1,2,3]]
 ```
 
----
-
-# Functions on Lists
+## Functions on Lists
 
 Just like tuples, lists can be deconstructed using pattern matching:
 
@@ -127,9 +111,7 @@ firstTwo (x:y:_) = (x, y)
 This is the same pattern matching we saw with tuples and other values—just
 applied to list constructors!
 
----
-
-# Functions Over Lists
+## Functions Over Lists
 
 A function that takes a list as an argument can pattern match on values
 constructed with `[]` and `:`. E.g.,
@@ -148,9 +130,7 @@ null _  = False
 
 - Note that `head` and `tail` are partial functions by design
 
----
-
-# Structural Recursion
+## Structural Recursion
 
 Haskell lacks loops, so to process multiple elements in a list, we typically
 reach for *recursion*. E.g.,
@@ -171,9 +151,7 @@ is an example of *structural recursion*
   - We account for the first element (`1 +`), and delegate handling the rest of
     the list (`xs`) to a recursive call
 
----
-
-## Tracing `length`
+### Tracing `length`
 
 ```haskell
 length :: [a] -> Int
@@ -191,18 +169,6 @@ length (_:xs) = 1 + length xs
 
 - `1 + (1 + (1 + 0))`
 
----
-
-## Tracing `length`
-
-```haskell
-length :: [a] -> Int
-length [] = 0
-length (_:xs) = 1 + length xs
-```
-
-- `1 + (1 + (1 + 0))`
-
 - `1 + (1 + 1))`
 
 - `1 + 2`
@@ -212,9 +178,7 @@ length (_:xs) = 1 + length xs
 Intuitively, we recurse down to the base case (here, the end of the list), then
 compute the final result "on the way out" of the recursive calls.
 
----
-
-## E.g., More Structural Recursion
+### E.g., More Structural Recursion
 
 Very similar to `length`, but we add the first element to the result.
 
@@ -225,10 +189,6 @@ sum (n:ns) = n + sum ns
 ```
 
 - `sum [1, 2, 3, 4, 5]` => `15`
-
----
-
-## E.g., More Structural Recursion
 
 The base case needn't be the end of the list! Here, we chase down the last
 element (if it exists).
@@ -244,10 +204,6 @@ last [] = error "empty list"
 
 Note that we can pattern match on list syntactic sugar!
 
----
-
-## E.g., More Structural Recursion
-
 This demonstrates a common "filtering" pattern; we only track (`1 +`) elements
 that match some criteria.
 
@@ -260,9 +216,7 @@ count x (y:ys) | x == y    = 1 + count x ys
 
 - `count 'l' "hello world"` => `3`
 
----
-
-# Functions that Build Lists
+## Functions that Build Lists
 
 We can also use recursion to build lists. E.g.,
 
@@ -279,9 +233,7 @@ We incrementally construct the list, where:
 - Otherwise, we construct a list (using `:`) from one copy of `x` and the list
   returned by a recursive call
 
----
-
-## Tracing `replicate`
+### Tracing `replicate`
 
 ```haskell
 replicate :: Int -> a -> [a]
@@ -299,9 +251,7 @@ replicate n x = x : replicate (n-1) x
 
 - `'a' : 'a' : 'a' : []`
 
----
-
-## E.g., More Functions that Build Lists
+### E.g., More Functions that Build Lists
 
 We can generate an ordered sequence of elements using `succ` (from `Ord`):
 
@@ -313,9 +263,7 @@ enumFromTo x y | x <= y    = x : enumFromTo (succ x) y
 
 - `enumFromTo 10 15` => `[10,11,12,13,14,15]`
 
----
-
-## E.g., Processing & Building Lists
+### E.g., Processing & Building Lists
 
 A function can simultaneously deconstruct and construct lists. E.g.,
 
@@ -327,10 +275,6 @@ keepEvens (n:ns) | n `rem` 2 == 0 = n : keepEvens ns
 ```
 
 - `keepEvens [42, 11, 19, 22, 100]` => `[42,22,100]`
-
----
-
-## E.g., Processing & Building Lists
 
 A useful pair of list functions are `take` and `drop`:
 
@@ -350,9 +294,7 @@ drop n (x:xs) = drop (n-1) xs
 
 - `drop 5 "hello world"` => `" world"`
 
----
-
-# Infinite lists
+## Infinite lists
 
 Here's a function that builds a list containing copies of a given element:
 
@@ -370,9 +312,7 @@ i.e., it would never return a usable result.
 
 - But this is admissible in Haskell, because of *lazy evaluation*
 
----
-
-# Lazy Evaluation
+## Lazy Evaluation
 
 Most languages use *eager evaluation* (also called "call-by-value"):
 
@@ -386,9 +326,7 @@ Haskell uses *lazy evaluation* (also called "call-by-name"):
 
 - `f (g x)` only evaluates `g x` if `f` actually uses its result
 
----
-
-## Lazy Evaluation: Thunks
+### Lazy Evaluation: Thunks
 
 When the result of an expression isn't needed immediately, Haskell creates a
 *thunk* for it: a suspended computation that can be evaluated when needed.
@@ -403,9 +341,7 @@ creates a thunk representing the call: `<thunk: repeat 1>`
 
 - Pattern matching determines how the thunk is subsequently evaluated
 
----
-
-## E.g., Evaluating Thunks
+### E.g., Evaluating Thunks
 
 E.g., consider the call `null (repeat 1)`, where:
 
@@ -422,10 +358,6 @@ We pattern match `<thunk: repeat 1>` against the constructors `[]` and `:`
 - I.e., we evaluate to `<thunk: 1> : <thunk: repeat 1>`; this matches the
   pattern that returns `False`
 
----
-
-## E.g., Evaluating Thunks
-
 E.g., consider the call `head (repeat 1)`, where:
 
 ```haskell
@@ -441,10 +373,6 @@ After pattern matching `<thunk: repeat 1>` against `(x:_)`, we now have the head
 
 - But the tail thunk is still unevaluated!
 
----
-
-## E.g., Evaluating Thunks
-
 E.g., consider the call `length (repeat 1)`, where:
 
 ```haskell
@@ -458,10 +386,6 @@ terminates when we encounter `[]`.
 
 - `length` diverges! (It builds a separate `1 + 1 + 1 + 1 + ...` thunk that
   exhausts memory.)
-
----
-
-## E.g., Evaluating Thunks
 
 E.g., consider the call `take 3 (repeat 1)`, where:
 
@@ -477,9 +401,7 @@ terminates its return list with `[]`.
 
 - The rest of the infinite list is never evaluated!
 
----
-
-### Tracing \`take 3 (repeat 1)\`
+#### Tracing \`take 3 (repeat 1)\`
 
 ```haskell
 take 3 (repeat 1)
@@ -493,9 +415,7 @@ take 3 (1 : <thunk: repeat 1>)
 1 : 1 : 1 : []
 ```
 
----
-
-## Lazy Evaluation: Key Takeaways
+### Lazy Evaluation: Key Takeaways
 
 Functions that *work* with infinite lists:
 
@@ -507,9 +427,7 @@ Functions that *diverge* on infinite lists:
 - Must traverse the entire list (`length`, `sum`, `last`)
 - Try to consume all elements (`reverse`, sorting functions)
 
----
-
-# List Comprehensions
+## List Comprehensions
 
 List comprehensions provide a concise syntax for building lists, inspired by
 mathematical set-builder notation.
@@ -528,9 +446,7 @@ mathematical set-builder notation.
 [x**2 for x in [1,2,3,4,5]]
 ```
 
----
-
-## List Comprehensions: Basic Syntax
+### List Comprehensions: Basic Syntax
 
 Syntax: `[expr | var <- list]`
 
@@ -545,9 +461,7 @@ uppercases s = [toUpper c | c <- s]
 The variable `x` (or `c`) takes on each value from the source list, and `expr`
 is evaluated for each.
 
----
-
-## List Comprehensions: Guards
+### List Comprehensions: Guards
 
 Add conditions with guards (boolean predicates after a comma):
 
@@ -563,9 +477,7 @@ Only elements satisfying the guard are included in the result.
 
 Multiple guards can be combined with commas (all must be true).
 
----
-
-## List Comprehensions: Multiple Generators
+### List Comprehensions: Multiple Generators
 
 Multiple generators create a Cartesian product:
 
@@ -586,9 +498,7 @@ orderedPairs :: [Int] -> [(Int, Int)]
 orderedPairs xs = [(x, y) | x <- xs, y <- xs, x < y]
 ```
 
----
-
-## List Comprehensions: Range Notation
+### List Comprehensions: Range Notation
 
 Haskell provides syntactic sugar for generating sequences:
 
@@ -612,9 +522,7 @@ You can also specify a step:
 [2,4..]      -- [2,4,6,8,... (infinite!)
 ```
 
----
-
-## List Comprehensions: When to Use Them
+### List Comprehensions: When to Use Them
 
 Use list comprehensions when:
 
@@ -625,10 +533,6 @@ Use list comprehensions when:
 ```haskell
 [x^2 | x <- [1..10], even x]  -- Clear and concise
 ```
-
----
-
-## List Comprehensions: When to Use Them
 
 Use explicit recursion when:
 

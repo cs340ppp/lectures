@@ -1,39 +1,29 @@
----
-title: "Higher Order Functions"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Higher Order Functions
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - HOFs and Combinators
 - Basic combinators
 - Recursive patterns via HOFs
 - Bonus HOFs
 
----
+## HOFs and Combinators
 
-# HOFs and Combinators
-
-A higher-order function (HOF) is a function that takes a function as a 
-parameter or returns a function. 
+A higher-order function (HOF) is a function that takes a function as a
+parameter or returns a function.
 
 (Non-HOFs are called first-order functions).
 
-<!-- pause -->
-
 They are a fundamental tool in functional programming.
 
-<!-- pause -->
-
-The term "combinator" is often used to refer to HOFs that combine or apply 
+The term "combinator" is often used to refer to HOFs that combine or apply
 argument functions to do all their work.
 
----
+## Basic combinators
 
-# Basic combinators
-
-## 1. Application
+### 1. Application
 
 ```haskell
 ($) :: (a -> b) -> a -> b
@@ -41,15 +31,9 @@ infixr 0 $
 f $ x = f x
 ```
 
-<!-- pause -->
-
 It seems redundant (why?), but is quite useful in practice!
 
----
-
-# Basic combinators
-
-## Application: `($)`
+#### Application: `($)`
 
 E.g., how can we rewrite the following expressions?
 
@@ -61,8 +45,6 @@ show (abs (2 - 5))
 take 5 (drop 10 (zip [1..] (repeat 'a')))
 ```
 
-<!-- pause -->
-
 Using `$` to eliminate parentheses:
 
 ```haskell
@@ -73,11 +55,7 @@ show $ abs $ 2 - 5
 take 5 $ drop 10 $ zip [1..] $ repeat 'a'
 ```
 
----
-
-# Basic combinators
-
-## 2. Composition
+### 2. Composition
 
 ```haskell
 (.) :: (b -> c) -> (a -> b) -> a -> c
@@ -85,15 +63,9 @@ infixr 9 .
 (f . g) x = f (g x)
 ```
 
-<!-- pause -->
-
 Allows us to build new functions by composing existing ones!
 
----
-
-# Basic combinators
-
-## Composition: `(.)`
+#### Composition: `(.)`
 
 E.g., re-implement `even'` with composition:
 
@@ -102,18 +74,10 @@ even' :: Integral a => a -> Bool
 even' x = 0 == (x `rem` 2)
 ```
 
-<!-- pause -->
-
 ```haskell
 even' :: Integral a => a -> Bool
 even' = (==0) . (`rem` 2)
 ```
-
----
-
-# Basic combinators
-
-## Composition: `(.)`
 
 E.g., compose temperature conversion functions:
 
@@ -131,40 +95,26 @@ f2h f
   | otherwise = "survivable"
 ```
 
-<!-- pause -->
-
 ```haskell
 k2h :: (Ord a, Fractional a) => a -> String
 k2h = f2h . c2f . k2c
 ```
 
----
-
-# Basic combinators
-
-## Composition: `(.)`
-
 E.g., strip whitespace from both ends of a string:
 
 ```haskell
 strip :: String -> String
-strip s = reverse $ dropWhile isSpace $ 
+strip s = reverse $ dropWhile isSpace $
           reverse $ dropWhile isSpace s
 ```
 
-<!-- pause -->
-
 ```haskell
 strip :: String -> String
-strip = reverse . dropWhile isSpace . 
+strip = reverse . dropWhile isSpace .
         reverse . dropWhile isSpace
 ```
 
----
-
-# Basic combinators
-
-## 3. Flip, On, and (many) others
+### 3. Flip, On, and (many) others
 
 Combinators are especially useful when paired with other HOFs!
 
@@ -173,18 +123,14 @@ flip :: (a -> b -> c) -> b -> a -> c
 flip f x y = f y x
 ```
 
-<!-- pause -->
-
 ```haskell
 on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
 on g f x y = g (f x) (f y)
 ```
 
----
+## Recursive patterns via HOFs
 
-# Recursive patterns via HOFs
-
-## 1. Map
+### 1. Map
 
 Apply a function to each item of a list, returning the new list.
 
@@ -194,11 +140,7 @@ map _ [] = []
 map f (x:xs) = f x : map f xs
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Map examples
+#### Map examples
 
 ```haskell
 map (^2) [1..10]
@@ -214,12 +156,6 @@ map (\x -> (x,x^2)) [1..10]
 -- [(1,1),(2,4),(3,9),...,(10,100)]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Map examples
-
 ```haskell
 map (++) $ words "on over under across"
 -- [("on"++),("over"++),("under"++),("across"++)]
@@ -234,27 +170,19 @@ map (map (*2)) [[1..5], [6..10], [11..15]]
 -- [[2,4,6,8,10],[12,14,16,18,20],[22,24,26,28,30]]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## 2. Filter
+### 2. Filter
 
 Keep only the elements of a list that satisfy a predicate.
 
 ```haskell
 filter :: (a -> Bool) -> [a] -> [a]
 filter _ [] = []
-filter p (x:xs) 
+filter p (x:xs)
   | p x       = x : filter p xs
   | otherwise = filter p xs
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Filter examples
+#### Filter examples
 
 ```haskell
 filter even [1..10]
@@ -267,29 +195,19 @@ filter (\(a,b,c) -> a^2+b^2 == c^2) $
        [(a,b,c) | a <- [1..10], b <- [a..10], c <- [b..10]]
 -- [(3,4,5),(6,8,10)]
 
-filter (\s -> reverse s == s) $ 
+filter (\s -> reverse s == s) $
        words "madam I refer to adam"
 -- ["madam","I","refer","adam"]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Filter examples
-
 ```haskell
-map (\w -> (w,length w)) $ 
-    filter (\s -> reverse s == s) $ 
+map (\w -> (w,length w)) $
+    filter (\s -> reverse s == s) $
            words "madam I refer to adam"
 -- [("madam",5),("I",1),("refer",5),("adam",4)]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## 3. All & Any
+### 3. All & Any
 
 ```haskell
 all :: (a -> Bool) -> [a] -> Bool
@@ -301,11 +219,7 @@ any _ [] = False
 any p (x:xs) = p x || any p xs
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## All & Any examples
+#### All & Any examples
 
 ```haskell
 all even [2,4..10]
@@ -318,21 +232,15 @@ filter (any isDigit) $ words "hello 123 world a456b"
 -- ["123","a456b"]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## 4. HOF versions of sort (and others)
+### 4. HOF versions of sort (and others)
 
 ```haskell
 sort :: Ord a => [a] -> [a]
 sort [] = []
-sort (x:xs) = sort [y | y <- xs, y < x] 
-              ++ [x] 
+sort (x:xs) = sort [y | y <- xs, y < x]
+              ++ [x]
               ++ sort [y | y <- xs, y >= x]
 ```
-
-<!-- pause -->
 
 ```haskell
 sortBy :: (a -> a -> Ordering) -> [a] -> [a]
@@ -342,11 +250,7 @@ sortBy cmp (x:xs) = sortBy cmp [y | y <- xs, cmp y x == LT]
                     ++ sortBy cmp [y | y <- xs, cmp y x /= LT]
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## sortBy examples
+#### sortBy examples
 
 ```haskell
 sortBy (flip compare) [1..10]
@@ -359,11 +263,7 @@ minimumBy (compare `on` length) $ words "madam I refer to adam"
 -- "I"
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## 5. Fold
+### 5. Fold
 
 Consider the recursive patterns found in:
 
@@ -377,15 +277,9 @@ showCat [] = ""
 showCat (x:xs) = ((++) . show) x $ showCat xs
 ```
 
-<!-- pause -->
-
 What is the essential pattern here?
 
----
-
-# Recursive patterns via HOFs
-
-## Right fold
+#### Right fold
 
 Write the HOF that captures this pattern:
 
@@ -394,12 +288,6 @@ foldr :: (a -> b -> b) -> b -> [a] -> b
 foldr _ v [] = v
 foldr f v (x:xs) = f x (foldr f v xs)
 ```
-
----
-
-# Recursive patterns via HOFs
-
-## Right fold
 
 E.g., trace the evaluation of `foldr (+) 0 [1..5]`:
 
@@ -416,11 +304,7 @@ foldr (+) 0 (1 : (2 : (3 : (4 : (5 : [])))))
 = 15
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Right fold examples
+#### Right fold examples
 
 Let's define some recursive functions in terms of foldr:
 
@@ -438,12 +322,6 @@ length' :: [a] -> Int
 length' = foldr (\_ n -> n+1) 0
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Right fold examples
-
 ```haskell
 map' :: (a -> b) -> [a] -> [b]
 map' f = foldr (\x xs -> f x : xs) []
@@ -452,11 +330,7 @@ filter' :: (a -> Bool) -> [a] -> [a]
 filter' p = foldr (\x xs -> if p x then x:xs else xs) []
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Right fold characteristics
+#### Right fold characteristics
 
 - In what order are the input list elements evaluated?
   - Left to right (but lazily!)
@@ -467,11 +341,7 @@ filter' p = foldr (\x xs -> if p x then x:xs else xs) []
 - Does the right fold work on infinite lists?
   - Yes, if the combining function is lazy in its second argument!
 
----
-
-# Recursive patterns via HOFs
-
-## Left fold
+#### Left fold
 
 Consider the recursive patterns found in:
 
@@ -482,17 +352,9 @@ hash seed (c:cs) = hash (h seed c) cs
   where h v c = (7*v `xor` fromIntegral (ord c)) `mod` 1000007
 ```
 
-<!-- pause -->
-
 How is the pattern different from before?
 
 The accumulator is passed as a parameter and updated on each recursive call!
-
----
-
-# Recursive patterns via HOFs
-
-## Left fold
 
 Write the HOF that captures this pattern:
 
@@ -501,12 +363,6 @@ foldl :: (b -> a -> b) -> b -> [a] -> b
 foldl _ v [] = v
 foldl f v (x:xs) = foldl f (f v x) xs
 ```
-
----
-
-# Recursive patterns via HOFs
-
-## Left fold
 
 E.g., trace the evaluation of `foldl (+) 0 [1..5]`:
 
@@ -523,11 +379,7 @@ foldl (+) 0 (1 : (2 : (3 : (4 : (5 : [])))))
 = 15
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Left fold examples
+#### Left fold examples
 
 Let's define some recursive functions in terms of foldl:
 
@@ -541,11 +393,7 @@ playMoves' = foldl move "         "
   where move board (x,y) = take x board ++ [y] ++ drop (x+1) board
 ```
 
----
-
-# Recursive patterns via HOFs
-
-## Left fold characteristics
+#### Left fold characteristics
 
 - In what order are the input list elements evaluated?
   - Left to right
@@ -559,11 +407,7 @@ playMoves' = foldl move "         "
 - How might we make the left fold more efficient?
   - Use strict evaluation with `foldl'` from `Data.List`
 
----
-
-# Recursive patterns via HOFs
-
-## When to fold left or right?
+#### When to fold left or right?
 
 - Use `foldr` when:
   - Working with infinite lists
@@ -575,11 +419,9 @@ playMoves' = foldl move "         "
   - The combining function is strict
   - Working with finite lists
 
----
+## Bonus HOFs
 
-# Bonus HOFs
-
-## foldr1 and foldl1
+### foldr1 and foldl1
 
 Folds that use the first element of the list as the initial value:
 
@@ -592,8 +434,6 @@ foldl1 :: (a -> a -> a) -> [a] -> a
 foldl1 f (x:xs) = foldl f x xs
 ```
 
-<!-- pause -->
-
 ```haskell
 foldr1 (*) [1..5]  -- 120
 foldr1 (^) [2,2,3]  -- 256
@@ -602,11 +442,7 @@ foldl1 (++) [[1,2], [3,4], [5,6]]  -- [1,2,3,4,5,6]
 foldl1 (/) [16,2,4]  -- 2.0
 ```
 
----
-
-# Bonus HOFs
-
-## iterate
+### iterate
 
 Takes a function and an initial value, and returns an infinite list
 of repeated applications of the function to the initial value.
@@ -616,45 +452,35 @@ iterate :: (a -> a) -> a -> [a]
 iterate f x = x : iterate f (f x)
 ```
 
-<!-- pause -->
-
 ```haskell
 take 10 $ iterate (*2) 1
 -- [1,2,4,8,16,32,64,128,256,512]
 ```
 
----
-
-# Bonus HOFs
-
-## until
+### until
 
 Takes a predicate and a function, and returns the first value that
 satisfies the predicate when repeatedly applied to the function.
 
 ```haskell
 until :: (a -> Bool) -> (a -> a) -> a -> a
-until p f x 
+until p f x
   | p x       = x
   | otherwise = until p f (f x)
 ```
-
-<!-- pause -->
 
 ```haskell
 until (> 100) (*2) 1
 -- 128
 
-let n = 2 
-in until (\x -> abs (n-x*x) < 0.001) 
-         (\x -> (x + n/x) / 2) 
+let n = 2
+in until (\x -> abs (n-x*x) < 0.001)
+         (\x -> (x + n/x) / 2)
          1.0
 -- 1.414215686274509 (approximately sqrt(2))
 ```
 
----
-
-# Summary
+## Summary
 
 Higher-order functions allow us to:
 

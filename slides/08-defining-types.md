@@ -1,10 +1,8 @@
----
-title: "Defining Types"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Defining Types
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - Introduction
 - Type synonyms
@@ -14,9 +12,7 @@ author: "Michael Lee <lee@iit.edu>"
   - Kinds of types
   - Some useful parametric types
 
----
-
-# Introduction
+## Introduction
 
 - Up until now, we've only studied *pre-existing* data types and classes
   - Concrete types, e.g., `Bool`, `Int`, `Char`, `String`, `(Int, Bool)`
@@ -25,9 +21,7 @@ author: "Michael Lee <lee@iit.edu>"
 
 - Time to build our own!
 
----
-
-# Type synonyms
+## Type synonyms
 
 "`type`" defines a *type synonym*
 
@@ -35,11 +29,7 @@ author: "Michael Lee <lee@iit.edu>"
 
 - often used as a form of documentation / to improve legibility
 
----
-
-# Type synonyms
-
-## E.g., English terms vs. Chars/Strings
+### E.g., English terms vs. Chars/Strings
 
 ```haskell
 type Letter = Char
@@ -49,19 +39,13 @@ type Word = [Letter]
 type Sentence = [Word]
 ```
 
-<!-- pause -->
-
 ```haskell
 phrases :: [Word] -> [Word] -> [Sentence]
 phrases adjs nouns = [ [adj, noun]
                        | adj <- adjs, noun <- nouns ]
 ```
 
----
-
-# Type synonyms
-
-## E.g., Tuple aliases
+### E.g., Tuple aliases
 
 (x,y) coordinates:
 
@@ -72,8 +56,6 @@ distance :: Point2D -> Point2D -> Double
 distance (x1,y1) (x2,y2) = sqrt $ (x1-x2)^2 + (y1-y2)^2
 ```
 
-<!-- pause -->
-
 Attaching numbers to values:
 
 ```haskell
@@ -83,9 +65,7 @@ enumerate :: [a] -> [Numbered a]
 enumerate xs = zip [1..] xs
 ```
 
----
-
-# *Algebraic* data types
+## *Algebraic* data types
 
 "`data`" defines a new *algebraic data type* with at least one *value
 constructor* (aka *data constructor*)
@@ -93,8 +73,6 @@ constructor* (aka *data constructor*)
 ```haskell
 data TypeName = Constructor1 | Constructor2 | ...
 ```
-
-<!-- pause -->
 
 Each constructor can take arguments, which describe the types of values that
 must be passed to the constructor when calling it.
@@ -105,17 +83,11 @@ data TypeName = Constructor1 ArgType1
               | ...
 ```
 
----
-
-# *Algebraic* data types
-
-## `YesOrNo` type
+### `YesOrNo` type
 
 ```haskell
 data YesOrNo = Yes | No
 ```
-
-<!-- pause -->
 
 - we can pattern match on value constructors:
 
@@ -129,11 +101,7 @@ No || No = No
 _  || _  = Yes
 ```
 
----
-
-# *Algebraic* data types
-
-## `Box` type
+### `Box` type
 
 A `Box` value is built of an `Int`, `Bool`, and `String`.
 
@@ -141,19 +109,11 @@ A `Box` value is built of an `Int`, `Bool`, and `String`.
 data Box = Box Int Bool String
 ```
 
-<!-- pause -->
-
 - The name of the type (`Box`) and value constructor (`Box`) are identical.
 
   - No ambiguity; they are always used in different contexts!
 
   - What is the type of the value constructor?
-
----
-
-# *Algebraic* data types
-
-## `Box` type
 
 Working with `Box` values:
 
@@ -170,21 +130,15 @@ boxAdd (Box i1 b1 s1) (Box i2 b2 s2)
 
 - Identify appearances of the `Box` type name and value constructor.
 
----
-
-# *Algebraic* data types
-
-## `Shape` type
+### `Shape` type
 
 `Shape` is a type whose values represent measurements of different shapes.
 
 ```haskell
-data Shape = Circle Double 
-             | Triangle Double Double 
+data Shape = Circle Double
+             | Triangle Double Double
              | Rectangle Double Double
 ```
-
-<!-- pause -->
 
 Compute the area of a shape:
 
@@ -195,11 +149,7 @@ area (Triangle h b)  = (h*b)/2
 area (Rectangle l w) = l*w
 ```
 
----
-
-# *Algebraic* data types
-
-## Why "*Algebraic*"?
+### Why "*Algebraic*"?
 
 An algebraic type is based on the *sum* and *product* of constituent values and
 types.
@@ -213,8 +163,6 @@ data T2 = T2V1 Bool | T2V2 T1
 
 - How many values belong to the types `T1` and `T2`?
 
-<!-- pause -->
-
 Here is a product type:
 
 ```haskell
@@ -222,12 +170,6 @@ data T3 = T3V Bool T1
 ```
 
 How many values belong to the type `T3`?
-
----
-
-# *Algebraic* data types
-
-## Why "*Algebraic*"?
 
 ```haskell
 data T1 = T1V1 | T1V2 | T1V3
@@ -243,9 +185,7 @@ data T4 = T4V1 T1 T2 | T4V2 T2 T3
 
 How many values make up `T4`?
 
----
-
-# Record syntax
+## Record syntax
 
 Aternate way of defining algebraic types -- allows us to specify attribute
 names, and automatically generates "getter" functions:
@@ -257,15 +197,11 @@ data Student = Student { firstName :: String
                        , grades    :: [Char] }
 ```
 
-<!-- pause -->
-
 We can still create values with fields specified positionally:
 
 ```haskell
 s1 = Student "John" "Doe" 1234 ['A', 'B']
 ```
-
-<!-- pause -->
 
 Or we can specify fields by name (order doesn't matter):
 
@@ -276,25 +212,19 @@ s2 = Student { lastName = "Doe"
              , studentId = 2345 }
 ```
 
-<!-- pause -->
-
 We also get a shortcut for creating a new value from another:
 
 ```haskell
 s3 = s1 { grades = ['B', 'A', 'D'] }
 ```
 
----
-
-# Self-referential types
+## Self-referential types
 
 How would you interpret the following type?
 
 ```haskell
 data RussianDoll = Doll String RussianDoll | EmptyDoll
 ```
-
-<!-- pause -->
 
 Here are some `RussianDoll` values:
 
@@ -305,8 +235,6 @@ d3 = Doll "matry" (Doll "osh" (Doll "ka" EmptyDoll))
 d4 = Doll "infinity, and beyond!" d4
 ```
 
-<!-- pause -->
-
 Write a function to return the message in the innermost non-empty doll:
 
 ```haskell
@@ -316,14 +244,10 @@ innerMostMessage (Doll m EmptyDoll) = m
 innerMostMessage (Doll _ d)         = innerMostMessage d
 ```
 
----
-
-# Parametric types
+## Parametric types
 
 A type definition can depend on one or more type variables. Such types are
 called *parametric* (or *parameterized*) types.
-
-<!-- pause -->
 
 E.g., a "universal" box type:
 
@@ -333,8 +257,6 @@ data UniversalBox a = UBox a
 
 The type name, `UniversalBox`, is not itself a full type specification. It takes
 type as an argument to specialize it; we therefore call it a *type constructor*.
-
-<!-- pause -->
 
 E.g., here are some `UniversalBox` values:
 
@@ -349,8 +271,6 @@ ub3 :: UniversalBox (Int -> Bool)
 ub3 = UBox even
 ```
 
-<!-- pause -->
-
 Here's a map-style HOF for a `UniversalBox`:
 
 ```haskell
@@ -358,9 +278,7 @@ mapBox :: (a -> b) -> UniversalBox a -> UniversalBox b
 mapBox f (UBox x) = UBox $ f x
 ```
 
----
-
-# *Kinds* of Types
+## *Kinds* of Types
 
 Type constructors vary in the number of type parameters they have. We categorize
 types by *kind*, which indicate what their type constructors can take as
@@ -372,8 +290,6 @@ arguments.
 - A type constructor that takes one concrete type in order to yield a fully
   specialized type is denoted kind `* -> *`
 
-<!-- pause -->
-
 What are the *kinds* of the following types? (use `:k` in ghci)
 
 ```haskell
@@ -382,19 +298,15 @@ data Bat a b c = Bat a b c
 data Baz a b = Baz (a b)
 ```
 
----
+## Some useful parametric types
 
-# Some useful parametric types
+### `Maybe`
 
-## `Maybe`
+### `Either`
 
-## `Either`
+### Lists
 
-## Lists
-
----
-
-## `Maybe`
+### `Maybe`
 
 A `Maybe a` represents either an `a` value or the *absence of an `a` value*.
 
@@ -402,12 +314,8 @@ A `Maybe a` represents either an `a` value or the *absence of an `a` value*.
 data Maybe a = Just a | Nothing
 ```
 
-<!-- pause -->
-
 This gives us a well-typed mechanism for returning a value from a function that
 represents a result or the *lack of a result* (e.g., a failed computation).
-
-<!-- pause -->
 
 E.g., consider:
 
@@ -418,17 +326,13 @@ find p (x:xs) | p x = Just x
               | otherwise = find p xs
 ```
 
----
-
-## `Either`
+### `Either`
 
 `Either` has constructors that take one of two types.
 
 ```haskell
 data Either a b = Left a | Right b
 ```
-
-<!-- pause -->
 
 We typically use the `Left` constructor to represent error values, and the
 `Right` constructor to hold correct (*right*) values.
@@ -441,9 +345,7 @@ find' p (x:xs) | p x = Right x
                | otherwise = find' p xs
 ```
 
----
-
-## Lists
+### Lists
 
 The built-in list is just another parametric type! We can define our own list
 type like this (`:-` is a value constructor):
@@ -452,8 +354,6 @@ type like this (`:-` is a value constructor):
 infixr 5 :-
 data List a = a :- (List a) | Null
 ```
-
-<!-- pause -->
 
 Here are some lists:
 
@@ -464,8 +364,6 @@ l1 = 'h' :- 'e' :- 'l' :- 'l' :- 'o' :- Null
 l2 :: List (List Int)
 l2 = (1 :- 2 :- Null) :- (3 :- 4 :- Null) :- Null
 ```
-
-<!-- pause -->
 
 And here's a map for our list!
 

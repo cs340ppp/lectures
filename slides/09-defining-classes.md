@@ -1,10 +1,8 @@
----
-title: "Defining and Using Type Classes"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Defining and Using Type Classes
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - Review of Type classes
 - Some classes and their instances:
@@ -14,9 +12,7 @@ author: "Michael Lee <lee@iit.edu>"
   - Foldable
 - Automatic derivation
 
----
-
-# Type Classes
+## Type Classes
 
 A type class defines a collection of functions implemented by conforming types.
 
@@ -25,9 +21,7 @@ A type class defines a collection of functions implemented by conforming types.
 
 Classes enable *ad hoc polymorphism*.
 
----
-
-# Example: `Explosive`
+## Example: `Explosive`
 
 ```haskell
 class Explosive a where
@@ -37,8 +31,6 @@ class Explosive a where
 - all types `a` that are instances of `Explosive` must implement `explode`,
   which takes that type and returns a list of that type.
 
-<!-- pause -->
-
 Here is an `Int` instance of `Explosive`:
 
 ```haskell
@@ -46,8 +38,6 @@ instance Explosive Int where
   explode :: Int -> [Int]
   explode n = [1..n]
 ```
-
-<!-- pause -->
 
 And a list instance:
 
@@ -57,8 +47,6 @@ instance Explosive [a] where
   explode l = map (:[]) l
 ```
 
-<!-- pause -->
-
 And now we can do:
 
 ```haskell
@@ -66,11 +54,7 @@ explode 5  ==  [1,2,3,4,5]
 explode [1..5]  ==  [[1],[2],[3],[4],[5]]
 ```
 
----
-
-# Example: `Explosive`
-
-## As a class constraint
+### As a class constraint
 
 We can use `Explosive` as a class constraint for polymorphic functions:
 
@@ -79,8 +63,6 @@ mapExploded :: Explosive a => (a -> b) -> a -> [b]
 mapExploded f x = map f $ explode x
 ```
 
-<!-- pause -->
-
 And `mapExploded` will work for all `Explosive` types!
 
 ```haskell
@@ -88,11 +70,7 @@ mapExploded even 5  ==  [False,True,False,True,False]
 mapExploded length [1..5]  ==  [1,1,1,1,1]
 ```
 
----
-
-# Example: `Explosive`
-
-## Default implementations
+### Default implementations
 
 We added another method, `explodeTwice`, with a *default implementation*.
 
@@ -104,8 +82,6 @@ class Explosive a where
   explodeTwice = map explode . explode
 ```
 
-<!-- pause -->
-
 - instances get the defaults "for free", but may override them
 
 ```haskell
@@ -113,9 +89,7 @@ explode 5  ==  [1,2,3,4,5]
 explodeTwice 5  ==  [[1],[1,2],[1,2,3],[1,2,3,4],[1,2,3,4,5]]
 ```
 
----
-
-# Example: `Eq`
+## Example: `Eq`
 
 Defines methods to test for equality/inequality:
 
@@ -123,7 +97,7 @@ Defines methods to test for equality/inequality:
 class Eq a where
   (==) :: a -> a -> Bool
   x == y = not (x /= y)
-  
+
   (/=) :: a -> a -> Bool
   x /= y = not (x == y)
 ```
@@ -132,11 +106,7 @@ class Eq a where
 
 - An instance needs to define only one of the methods (*minimal implementation*)
 
----
-
-# Example: `Eq`
-
-## `Student` instance
+### `Student` instance
 
 Can you make the `Student` type an instance of `Eq`?
 
@@ -149,8 +119,6 @@ data Student = Student {
                }
 ```
 
-<!-- pause -->
-
 Simple implementation based solely on `studentId` field:
 
 ```haskell
@@ -159,19 +127,13 @@ instance Eq Student where
   (Student _ _ id1 _) == (Student _ _ id2 _) = id1 == id2
 ```
 
----
-
-# Example: `Eq`
-
-## `List` instance
+### `List` instance
 
 How would you make `List` an instance of `Eq`?
 
 ```haskell
 data List a = a :- (List a) | Null
 ```
-
-<!-- pause -->
 
 Making a polymorphic type an instance of a class may require adding constraints
 to the instance declaration.
@@ -187,9 +149,7 @@ instance Eq a => Eq (List a) where
 - `Eq a => Eq (List a)` means `List a` can be an instance of `Eq` only if `a` is
   an instance of `Eq`.
 
----
-
-# Example: `Ord`
+## Example: `Ord`
 
 Relational methods:
 
@@ -212,8 +172,6 @@ class Eq a => Ord a where
     min x y = if x <= y then x else y
 ```
 
-<!-- pause -->
-
 - `Eq a => Ord a` means `Eq` is the *superclass* of `Ord`
   - `Ord` inherits all methods of `Eq`
   - All instances of `Ord` must also be instances of `Eq`
@@ -221,11 +179,7 @@ class Eq a => Ord a where
 
 - A minimal instance only needs to implement `compare` or `<=`
 
----
-
-# Example: `Ord`
-
-## `Student` instance
+### `Student` instance
 
 ```haskell
 instance Ord Student where
@@ -234,9 +188,7 @@ instance Ord Student where
       = compare id1 id2
 ```
 
----
-
-# Example: `Foldable`
+## Example: `Foldable`
 
 Methods built atop primitive recursion:
 
@@ -258,11 +210,7 @@ class Foldable t where
 
 - `foldr` is the only required method!
 
----
-
-# Example: `Foldable`
-
-## `List` instance
+### `List` instance
 
 ```haskell
 instance Foldable List where
@@ -273,9 +221,7 @@ instance Foldable List where
 
 What functionality does this give us?
 
----
-
-# Automatic derivation
+## Automatic derivation
 
 The Haskell compiler can automagically derive instances of the classes `Eq`,
 `Ord`, `Enum`, `Bounded`, `Show`, and `Read` for data types (which meet certain
@@ -287,7 +233,7 @@ behavior is sufficient.
 E.g.,
 
 ```haskell
-data Suit = Diamond | Club | Heart | Spade 
+data Suit = Diamond | Club | Heart | Spade
             deriving (Eq, Ord, Enum, Bounded, Show, Read)
 ```
 

@@ -1,21 +1,17 @@
----
-title: "Functors, Applicatives, and Monads"
-sub_title: "CS 340: Programming Patterns and Paradigms"
-author: "Michael Lee <lee@iit.edu>"
----
+# Functors, Applicatives, and Monads
+## CS 340: Programming Patterns and Paradigms
+Michael Lee <lee@iit.edu>
 
-# Agenda
+## Agenda
 
 - Functors
 - Applicatives
 - Monads
 - Laws
 
----
+## Functors
 
-# Functors
-
-## Motivation: Mapping
+### Motivation: Mapping
 
 `map` is a super useful HOF --- we can apply arbitrary functions to the
 *contents* of a list without traversing the list ourselves.
@@ -24,16 +20,10 @@ author: "Michael Lee <lee@iit.edu>"
 map :: (a -> b) -> [a] -> [b]
 ```
 
-<!-- pause -->
-
 Wouldn't it be cool if we could *generalize* this idea of mapping an HOF over
 the contents of an arbitrary "container"?
 
----
-
-# Functors
-
-## Central idea
+### Central idea
 
 A functor is a class that supports a "mapping" operation, whereby a function can
 be applied to the value(s) contained by the functor without changing its
@@ -41,9 +31,7 @@ structure.
 
 We can think of a functor, more generally, as a *context* for some value.
 
-<!-- pause -->
-
-## Definition
+### Definition
 
 ```haskell
 class Functor f where
@@ -54,8 +42,6 @@ class Functor f where
 
 - Note that the *kind* of `f` must be `* -> *`, for `f a` and `f b` to make
   sense in the type declaration of `fmap`.
-
-<!-- pause -->
 
 ```mermaid +render +width:80%
 flowchart LR
@@ -72,11 +58,7 @@ flowchart LR
     end
 ```
 
----
-
-# Functors
-
-## List as a Functor
+### List as a Functor
 
 A list functor instance behaves just like `map`:
 
@@ -87,8 +69,6 @@ instance Functor [] where
   fmap f (x:xs) = f x : fmap f xs
 ```
 
-<!-- pause -->
-
 Or just:
 
 ```haskell
@@ -97,19 +77,13 @@ instance Functor [] where
   fmap = map
 ```
 
-<!-- pause -->
-
 So we can do:
 
 ```haskll
 fmap even [1..5] --> [False, True, False, True, False]
 ```
 
----
-
-# Functors
-
-## Maybe as a Functor
+### Maybe as a Functor
 
 A `Maybe` contains either a value (in a `Just`) or `Nothing` (no value at all).
 
@@ -120,8 +94,6 @@ instance Functor Maybe where
   fmap f (Just x) = Just $ f x
 ```
 
-<!-- pause -->
-
 So we can do:
 
 ```haskell
@@ -129,11 +101,7 @@ fmap even Nothing --> Nothing
 fmap even $ Just 42 --> Just True
 ```
 
----
-
-# Functors
-
-## The `<$>` operator
+### The `<$>` operator
 
 Just as `$` represents "pure" function application, we can define the `<$>`
 operator to represent function application to values inside functors:
@@ -143,8 +111,6 @@ infixl 4 <$>
 (<$>) :: Functor f => (a -> b) -> f a -> f b
 (<$>) = fmap
 ```
-
-<!-- pause -->
 
 So we can do:
 
@@ -156,11 +122,7 @@ reverse <$> Just "Aloha"  ==  Just "aholA"
 reverse <$> ["cadabra", "tacocat"]  ==  ["arbadac", "tacocat"]
 ```
 
----
-
-# Functors
-
-## Tree as a Functor
+### Tree as a Functor
 
 A `Tree` is a more complex, homogeneous self-referential structure.
 
@@ -170,20 +132,12 @@ data Tree a = Node a [Tree a] | Leaf a
 
 Can you make `Tree` a functor?
 
-<!-- pause -->
-
 ```haskell
 instance Functor Tree where
   fmap :: (a -> b) -> Tree a -> Tree b
   fmap f (Leaf x)    = Leaf $ f x
   fmap f (Node x ts) = Node (f x) ((f <$>) <$> ts)
 ```
-
-<!-- pause -->
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
 
 So we can do:
 
@@ -200,8 +154,6 @@ length <$> Node "Animalia" [
            ]
 ```
 
-<!-- column: 1 -->
-
 Which yields:
 
 ```haskell
@@ -217,19 +169,13 @@ Node 8 [
 ]
 ```
 
----
-
-# Functors
-
-## Functions as Functors!
+### Functions as Functors!
 
 A function with type `a -> b` is a container for its eventual result.
 
 - How do we get at its contents?
 
 - How would you make `a -> b` a functor?
-
-<!-- pause -->
 
 ```haskell
 instance Functor ((->) a) where
@@ -243,27 +189,19 @@ instance Functor ((->) a) where
   fmap = (.)
 ```
 
-<!-- pause -->
-
 A new, novel way of interpreting composition:
 
 ```haskell
 ((2*) <$> (5+) <$> (100-)) 90
 ```
 
----
-
-# Functors
-
-## Limitations
+### Limitations
 
 Functors allow us to apply pure functions to "boxed" values.
 
 But what if the functions are themselves boxed?
 
 - This might happen if we partially apply a function (via `<$>`) to a functor
-
-<!-- pause -->
 
 ```mermaid +render +width:60%
 flowchart LR
@@ -277,35 +215,29 @@ flowchart LR
     box1 -.->|?| box2
 ```
 
----
+## Applicative Functors
 
-# Applicative Functors
-
-## Central idea
+### Central idea
 
 Applicative functors are augmented so as to support operations *between*
 functors.
 
-<!-- pause -->
-
-## Definition
+### Definition
 
 ```haskell
 class Functor f => Applicative f where
   pure :: a -> f a
-  
+
   (<*>) :: f (a -> b) -> f a -> f b
 ```
 
 1. `pure` takes a value and wraps it in a functor instance
 2. `<*>` applies a function inside one functor to a value inside another functor
 
-<!-- pause -->
-
 ```mermaid +render +width:100%
 flowchart LR
     pfn{{fn :: a -> b}} ==>|pure| box1
-    
+
     subgraph star[ ]
       direction LR
       subgraph box1[Functor]
@@ -328,28 +260,20 @@ flowchart LR
     end
 ```
 
----
-
-# Applicative Functors
-
-## Maybe as an Applicative
+### Maybe as an Applicative
 
 ```haskell
 instance Applicative Maybe where
   pure :: a -> Maybe a
   pure = Just
-  
+
   (<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
   Nothing  <*> _        = Nothing
   _        <*> Nothing  = Nothing
   (Just f) <*> (Just x) = Just $ f x
 ```
 
----
-
-# Applicative Functors
-
-## Using the Maybe Applicative
+### Using the Maybe Applicative
 
 Consider:
 
@@ -363,8 +287,6 @@ pure (3*) <*> Just 7
 (\x y z -> x+y*z) <$> Just 2 <*> Just 3 <*> Just 4
 ```
 
-<!-- pause -->
-
 What happens if any of the values are `Nothing`?
 
 ```haskell
@@ -373,11 +295,7 @@ What happens if any of the values are `Nothing`?
 (\x y z -> x+y*z) <$> Just 2 <*> Nothing <*> Just 4
 ```
 
----
-
-# Applicative Functors
-
-## List as an Applicative
+### List as an Applicative
 
 Can you make `[a]` an instance of `Applicative`?
 
@@ -386,13 +304,11 @@ Consider:
 - What should `pure even <*> [1..10]` do?
 - What should `[(2*), (5+)] <*> [1, 3, 10]` do?
 
-<!-- pause -->
-
 ```haskell
 instance Applicative [] where
   pure :: a -> [a]
   pure x = [x]
-  
+
   (<*>) :: [a -> b] -> [a] -> [b]
   [] <*> _  = []
   _  <*> [] = []
@@ -405,11 +321,7 @@ So we can do:
 pure (+) <*> [1,2] <*> [10,20]  ==  [11,21,12,22]
 ```
 
----
-
-# Applicative Functors
-
-## "lift"-ing functions
+### "lift"-ing functions
 
 For convenience, we can define utility functions that *lift* pure functions to
 work with values in an `Applicative` context.
@@ -418,8 +330,6 @@ work with values in an `Applicative` context.
 liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
 liftA2 f x y = f <$> x <*> y
 ```
-
-<!-- pause -->
 
 So we can do:
 
@@ -435,23 +345,15 @@ Which is arguably more readable and expressive than:
 (+) <$> [1,2] <*> [10,20]
 ```
 
-<!-- pause -->
-
 Sometimes we talk about "lifting" or "lifted" functions, which are just pure
 functions adapted for use in other contexts.
 
----
-
-# Applicative Functors
-
-## Limitations
+### Limitations
 
 So far, we've used `<$>` and `<*>` with functions that act on and return values
 which sit "inside" contexts.
 
 But what happens when we use a function that creates its own context?
-
-<!-- pause -->
 
 E.g., recall the `find` function:
 
@@ -462,12 +364,6 @@ find p (x:xs) | p x = Just x
               | otherwise = find p xs
 ```
 
-<!-- pause -->
-
-<!-- column_layout: [1,1] -->
-
-<!-- column: 0 -->
-
 What are the results of the following expressions?
 
 ```haskell
@@ -475,10 +371,6 @@ find even <$> Just [1..10]
 
 pure (find even) <*> Just [1,3..9]
 ```
-
-<!-- pause -->
-
-<!-- column: 1 -->
 
 Answer:
 
@@ -488,18 +380,12 @@ Just (Just 2)
 Just Nothing
 ```
 
-<!-- pause -->
-
-<!-- reset_layout -->
-
 Weird! We want the final context to be "merged" with the result of the function
 (which generates its own context).
 
----
+## Monads
 
-# Monads
-
-## Central idea
+### Central idea
 
 A monad is a functor that represents a *computation* (aka *action*) that results
 in a value in some context.
@@ -507,9 +393,7 @@ in a value in some context.
 Monad operations allow us to chain together a series of computations,
 propagating their results as needed, and updating the context.
 
-<!-- pause -->
-
-## Definition
+### Definition
 
 ```haskell
 class Applicative m => Monad m where
@@ -528,18 +412,14 @@ class Applicative m => Monad m where
   result of the first, but merging their contexts
 - `return` is just a synonym for `pure`
 
----
-
-# Monads
-
-## Visualization
+### Visualization
 
 ```mermaid +render +width:90%
 flowchart LR
     subgraph bind[bind]
       direction LR
-      x -- "&gt;&gt;=" --> fn{{"fn :: a -> m b"}} ==> m2 
-    
+      x -- "&gt;&gt;=" --> fn{{"fn :: a -> m b"}} ==> m2
+
       subgraph m1[Monad]
         direction LR
         x([x :: a])
@@ -564,7 +444,7 @@ flowchart LR
     subgraph seq[sequence]
       direction LR
       m1 --"&gt;&gt;"--> m2
-    
+
       subgraph m1[Monad]
         direction LR
         x([x :: a])
@@ -586,18 +466,14 @@ flowchart LR
 
 ```mermaid +render +width:33%
 flowchart LR
-    px([x :: a]) -- return --> m 
+    px([x :: a]) -- return --> m
     subgraph m[Monad]
       direction LR
       x([x :: a])
     end
 ```
 
----
-
-# Monads
-
-## Maybe instance of Monad
+### Maybe instance of Monad
 
 ```haskell
 instance Monad Maybe where
@@ -605,8 +481,6 @@ instance Monad Maybe where
   Nothing >>= _ = Nothing
   Just x  >>= f = f x
 ```
-
-<!-- pause -->
 
 Now we get sensible results by doing:
 
@@ -618,19 +492,13 @@ Just [1,3..9] >>= find even == Nothing
 Nothing >>= find even       == Nothing
 ```
 
----
-
-# Monads
-
-## An extended example
+### An extended example
 
 Consider `div`, which throws an exception if the denominator is 0.
 
 ```haskell
 div :: Integral a => a -> a -> a
 ```
-
-<!-- pause -->
 
 We can improve on this by writing `safeDiv` as follows:
 
@@ -640,19 +508,13 @@ safeDiv _ 0 = Nothing
 safeDiv x y = Just $ x `div` y
 ```
 
-<!-- pause -->
-
 Now consider implementing the following function using `safeDiv`:
 
 ```latex +render +no_background
 \[ f(a,b,c,d,e,f) = \frac{\frac{a}{b} + \frac{c}{d}}{e} \times f \]
 ```
 
----
-
-# Monads
-
-## An extended example
+### An extended example (cont.)
 
 ```latex +render +no_background
 \[ f(a,b,c,d,e,f) = \frac{\frac{a}{b} + \frac{c}{d}}{e} \times f \]
@@ -664,30 +526,24 @@ Take 1 (explicit pattern-matching):
 fDivs :: Integral a => a -> a -> a -> a -> a -> a -> Maybe a
 fDivs a b c d e f =
   case a `safeDiv` b
-  of Nothing -> Nothing 
+  of Nothing -> Nothing
      Just r1 -> case c `safeDiv` d
-                of Nothing -> Nothing 
+                of Nothing -> Nothing
                    Just r2 -> case (r1+r2) `safeDiv` e
                               of Nothing -> Nothing
                                  Just r3 -> Just (r3*f)
 ```
 
-<!-- pause -->
-
 **Yuck!!!**
 
----
-
-# Monads
-
-## An extended example
+### An extended example (cont.)
 
 Take 2 (using *bind*):
 
 ```haskell
 fDivs :: Integral a => a -> a -> a -> a -> a -> a -> Maybe a
 fDivs a b c d e f = a `safeDiv` b >>= \r1 ->
-                       (c `safeDiv` d >>= \r2 -> 
+                       (c `safeDiv` d >>= \r2 ->
                           ((r1+r2) `safeDiv` e >>= \r3 ->
                              (return (r3 * f))))
 ```
@@ -695,8 +551,6 @@ fDivs a b c d e f = a `safeDiv` b >>= \r1 ->
 `>>=` takes care of merging the contexts of the results (i.e., `Nothing` or
 `Just X`) correctly. I.e., the "monadic machinery" allows us to just focus on
 working with the results (and ignoring failure/success).
-
-<!-- pause -->
 
 Here's a (slightly simplified) visual:
 
@@ -751,18 +605,14 @@ flowchart LR
     classDef hidden display: none;
 ```
 
----
-
-# Monads
-
-## An extended example
+### An extended example (cont.)
 
 Take 2 (using *bind*):
 
 ```haskell
 fDivs :: Integral a => a -> a -> a -> a -> a -> a -> Maybe a
 fDivs a b c d e f = a `safeDiv` b >>= \r1 ->
-                       (c `safeDiv` d >>= \r2 -> 
+                       (c `safeDiv` d >>= \r2 ->
                           ((r1+r2) `safeDiv` e >>= \r3 ->
                              (return (r3 * f))))
 ```
@@ -772,12 +622,10 @@ We can rewrite the above as follows:
 ```haskell
 fDivs :: Integral a => a -> a -> a -> a -> a -> a -> Maybe a
 fDivs a b c d e f = a `safeDiv` b >>= \r1 ->
-                    c `safeDiv` d >>= \r2 -> 
+                    c `safeDiv` d >>= \r2 ->
                     (r1+r2) `safeDiv` e >>= \r3 ->
                     return (r3 * f)
 ```
-
-<!-- pause -->
 
 This pattern is so common, *do-notation* gives us syntactic sugar for it!
 
@@ -789,18 +637,14 @@ fDivs a b c d e f = do r1 <- a `safeDiv` b
                        return (r3 * f)
 ```
 
----
+## `do` notation
 
-# `do` notation
-
-## Binding a result
+### Binding a result
 
 ```haskell
 do x <- m
    rest
 ```
-
-<!-- pause -->
 
 desugars into:
 
@@ -808,18 +652,12 @@ desugars into:
 m >>= \x -> rest
 ```
 
----
-
-# `do` notation
-
-## Sequencing
+### Sequencing
 
 ```haskell
 do m
    rest
 ```
-
-<!-- pause -->
 
 desugars into:
 
@@ -827,18 +665,13 @@ desugars into:
 m >> rest
 ```
 
-<!-- pause -->
-
 which is the same as:
 
 ```haskell
 m >>= \_ -> rest
 ```
 
----
-# `do` notation
-
-## Local bindings
+### Local bindings
 
 We can also use `let` to introduce local vars in a `do` block:
 
@@ -852,9 +685,8 @@ desugars into:
 ```haskell
 let x = y in rest
 ```
----
 
-# `do` notation
+### Example
 
 Here's an example of a `do` block that uses all the forms of syntactic sugar:
 
@@ -868,9 +700,7 @@ foo x y = do r1 <- monadicFn1 x
 
 Make sure you can manually *desugar* this into `>>=` and `>>` operations!
 
----
-
-# Laws
+## Laws
 
 Instances of Functors, Applicatives, and Monads should conform to a handful of
 "laws", which ensure that all class instances behave in a predictable manner.
@@ -878,55 +708,49 @@ Instances of Functors, Applicatives, and Monads should conform to a handful of
 The compiler does not enforce these laws for us -- it is up to the programmer to
 test and ensure they are satisfied!
 
-<!-- pause -->
+### Functor laws
 
-## Functor laws
-
-### Identity
+#### Identity
 
 ```haskell +no_background
 fmap id       =  id
 ```
 
-### Composition
+#### Composition
 
 ```haskell +no_background
 fmap (f . g)  =  (fmap f . fmap g)
 ```
 
----
+### Applicative laws
 
-## Applicative laws
-
-### Identity
+#### Identity
 
 ```haskell +no_background
 pure id <*> v               =  v
 ```
 
-### Homomorphism
+#### Homomorphism
 
 ```haskell +no_background
 pure f <*> pure x           =  pure (f x)
 ```
 
-### Interchange
+#### Interchange
 
 ```haskell +no_background
 u <*> pure x                =  pure ($ x) <*> u
 ```
 
-### Composition
+#### Composition
 
 ```haskell +no_background
 pure (.) <*> u <*> v <*> w  =  u <*> (v <*> w)
 ```
 
----
+### Monad laws
 
-## Monad laws
-
-### Left Identity
+#### Left Identity
 
 ```haskell +no_background
 return x >>= f             =  f x
@@ -936,7 +760,7 @@ do y <- return x           =  do f x
    f y
 ```
 
-### Right Identity
+#### Right Identity
 
 ```haskell +no_background
 m >>= return               =  m
@@ -946,7 +770,7 @@ do x <- m                  =  do m
    return x
 ```
 
-### Associativity
+#### Associativity
 
 ```haskell +no_background
 (m >>= (\x -> f x))        =  m >>= (\x -> f x
