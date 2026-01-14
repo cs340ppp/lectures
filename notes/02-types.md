@@ -9,7 +9,7 @@
 - Polymorphic Types and Parametric Polymorphism
 - Type Classes and Ad Hoc Polymorphism
 
-// You'll need to import Data.char and Data.List for the examples given.
+<!-- You'll need to import Data.char and Data.List for the examples given. -->
 
 ## What's a *Type*?
 
@@ -131,20 +131,22 @@ Consider the following types. What are the (meaningful) names of some functions 
 ? :: String -> String -> String
 ```
 
-// ? :: Int -> Int
-// -- Examples: increment, double, square, negate, abs...
-//
-// ? :: Bool -> Bool -> Bool
-// -- Examples: and, or, xor, implies...
-//
-// ? :: Char -> Char
-// -- Examples: toUpper, toLower, nextChar...
-//
-// ? :: String -> Int
-// -- Examples: length, count_words, count_vowels...
-//
-// ? :: String -> String -> String
-// -- Examples: concatenate, interleave, interpolate...
+<!--
+? :: Int -> Int
+-- Examples: increment, double, square, negate, abs...
+
+? :: Bool -> Bool -> Bool
+-- Examples: and, or, xor, implies...
+
+? :: Char -> Char
+-- Examples: toUpper, toLower, nextChar...
+
+? :: String -> Int
+-- Examples: length, count_words, count_vowels...
+
+? :: String -> String -> String
+-- Examples: concatenate, interleave, interpolate...
+-->
 
 ## Kinds
 
