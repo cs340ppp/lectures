@@ -1,106 +1,153 @@
 module Lect04 where
-import Data.Char
+import Prelude hiding (null, head, tail, length, product, enumFromTo,
+                       map, filter, zip, (++), reverse, repeat,
+                       enumFrom, take, drop)
 
-replicate' :: Int -> a -> [a]
-replicate' 0 _ = []
-replicate' n x = x : replicate' (n-1) x
+-- basic list construction
 
-enumFromTo' :: (Ord a, Enum a) => a -> a -> [a]
-enumFromTo' x y | x <= y    = x : enumFromTo' (succ x) y
-                | otherwise = []
+intList :: [Int]
+intList = 1 : 2 : 3 : 4 : 5 : []
 
-ones :: [Int]
-ones = 1 : ones
- 
-repeat' :: a -> [a]
-repeat' x = x : repeat' x
+str1, str2 :: [Char]
+str1 = "world"
+str2 = "hello" ++ str1
 
-enumFrom' :: Enum a => a -> [a]
-enumFrom' x = x : enumFrom' (succ x)
+vowels :: [(Char, Bool)]
+vowels = [('a', True), ('b', False), ('e', True)]
 
-evens = [2*x | x <- [1..]]
+counts :: [[Int]]
+counts = [[1], [1,2], [1,2,3]]
 
-evens' = [x | x <- [1..], x `mod` 2 == 0]
+-- basic pattern matching
 
-sudokuBoxes = [[[r,c] | r <- rs, c <- cs] | rs <- ["ABC", "DEF", "GHI"],
-                                            cs <- ["123", "456", "789"]]
+null :: [a] -> Bool
+null [] = True
+null _  = False
 
-integerRightTriangles p = [(a,b,c) | a <- [1..p], 
-                                     b <- [a..(p-a)],
-                                     let c = p-(a+b),
-                                     a^2 + b^2 == c^2]
+head :: [a] -> a
+head (x:_) = x
+head _ = error "empty list"
 
-factors :: Integral a => a -> [a]
-factors n = [f | f <- [1..n], n `mod` f == 0]
+tail :: [a] -> [a]
+tail (_:xs) = xs
+tail _ = error "empty list"
 
-cartesianProduct :: [a] -> [b] -> [(a,b)]
-cartesianProduct xs ys = [(x,y) | x <- xs, y <- ys]
+-- deep pattern matching
 
-concat' :: [[a]] -> [a]
-concat' ls = [x | l <- ls, x <- l]
+sumSecondTwo :: Num a => [a] -> a
+sumSecondTwo (_:x:y:_) = x + y
+sumSecondTwo _ = 0
 
-head' :: [a] -> a
-head' (x:_) = x
+firstOfFirst :: [[a]] -> a
+firstOfFirst ((x:_):_) = x
+firstOfFirst _ = error "bad structure"
 
-tail' :: [a] -> [a]
-tail' (_:xs) = xs
+-- structural recursion
 
-null' :: [a] -> Bool
-null' [] = True
-null' _  = False
+length :: [a] -> Int
+length [] = 0
+length (x:xs) = 1 + length xs
 
-length' :: [a] -> Int
-length' [] = 0
-length' (x:xs) = 1 + length' xs
+productOfSquares :: Num a => [a] -> a
+productOfSquares [] = 1
+productOfSquares (x:xs) = x^2 * productOfSquares xs
 
-last' :: [a] -> a
-last' (x:[]) = x
-last' (_:xs) = last' xs
+-- building lists
 
+enumFromTo :: (Ord a, Enum a) => a -> a -> [a]
+enumFromTo x y | x <= y    = x : enumFromTo (succ x) y
+               | otherwise = []
 
-(+++) :: [a] -> [a] -> [a]
-[] +++ ys = ys
-(x:xs) +++ ys = x : xs +++ ys
+-- processing & building lists
 
+double :: Num a => [a] -> [a]
+double [] = []
+double (x:xs) = 2*x : double xs
 
-(!!!) :: [a] -> Int -> a 
-(x:_) !!! 0 = x
-(_:xs) !!! n = xs !!! (n-1)
+-- generalized function mapping HOF
 
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x : map f xs
 
-reverse' :: [a] -> [a]
-reverse' [] = []
-reverse' (x:xs) = reverse' xs +++ [x] -- is there a more efficient way?
+-- filtering HOF
 
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter p (x:xs)
+  | p x       = x : filter p xs
+  | otherwise = filter p xs
 
-take' :: Int -> [a] -> [a]
-take' 0 _ = []
-take' _ [] = []
-take' n (x:xs) = x : take' (n-1) xs
+-- traversing two lists in parallel
 
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x,y) : zip xs ys
 
-splitAt' :: Int -> [a] -> ([a], [a])
-splitAt' _ [] = ([],[])
-splitAt' 0 xs = ([], xs)
-splitAt' n (x:xs) = let (ys,zs) = splitAt' (n-1) xs
-                    in (x:ys, zs)
+-- concatenation
 
+(++) :: [a] -> [a] -> [a]
+xs ++ [] = xs
+[] ++ ys = ys
+(x:xs) ++ ys = x : (xs ++ ys)
 
-break' :: (a -> Bool) -> [a] -> ([a], [a])
-break' _ [] = ([],[])
-break' p l@(x:xs) | p x = ([], l)
-                  | otherwise = let (ys, zs) = break' p xs
-                                in (x:ys, zs)
+-- reversal
 
-words' :: String -> [String]
-words' [] = []
-words' l@(c:cs) | isSpace c = words' cs
-                | otherwise = let (w, ws) = break' isSpace l
-                              in w : words' ws
+-- O(N^2) version (inefficient!)
+reverse :: [a] -> [a]
+reverse [] = []
+reverse (x:xs) = reverse xs ++ [x]
 
-caesar :: Int -> String -> String
-caesar _ [] = []
-caesar n (x:xs) = (if isLetter x then encrypt x else x) : caesar n xs
-  where encrypt x = n2l ((l2n x + n) `mod` 26)
-        l2n c = ord (toUpper c) - ord 'A'
-        n2l n = chr (n + ord 'A')
+-- O(N) using an accumulator
+reverse':: [a] -> [a] -> [a]
+reverse' (x:xs) acc = reverse' xs (x:acc)
+reverse' [] acc = acc
+
+-- hiding the accumulator with a helper function
+reverse'' :: [a] -> [a]
+reverse'' lst = aux lst []
+  where aux (x:xs) acc = aux xs (x:acc)
+        aux [] acc = acc
+
+-- infinite list generators
+
+repeat :: a -> [a]
+repeat x = x : repeat x
+
+enumFrom :: Enum a => a -> [a]
+enumFrom x = x : enumFrom (succ x)
+
+-- a useful pair of functions
+
+take :: Int -> [a] -> [a]
+take 0 _ = []
+take _ [] = []
+take n (x:xs) = x : take (n-1) xs
+
+drop :: Int -> [a] -> [a]
+drop 0 xs = xs
+drop _ [] = []
+drop n (x:xs) = drop (n-1) xs
+
+-- list comprehensions
+
+pairs :: [a] -> [b] -> [(a, b)]
+pairs xs ys = [(x, y) | x <- xs, y <- ys]
+
+orderedPairs :: [Int] -> [(Int, Int)]
+orderedPairs xs = [(x, y) | x <- xs, y <- xs, x < y]
+
+-- more infinite lists
+
+oddSquares :: [Integer]
+oddSquares = map (^2) (filter odd [1..])
+
+primes :: [Integer]
+primes = sieve [2..]
+  where
+    sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p > 0]
+    
+fibs :: [Integer]
+fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+
