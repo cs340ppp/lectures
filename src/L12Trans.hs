@@ -1,6 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Lect12 where
+module L12Trans where
 
 import Prelude hiding (fail)
 import Control.Exception

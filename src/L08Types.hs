@@ -1,4 +1,4 @@
-module Lect08 where
+module L08Types where
 import Prelude hiding (Word, Maybe, Just, Nothing, Either, Left, Right)
 import Data.Char
 

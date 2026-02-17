@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Lect13 where
+module L13Search where
 import Prelude hiding (lines)
 import Data.Maybe
 import Data.Ord

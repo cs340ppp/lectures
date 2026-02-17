@@ -1,4 +1,4 @@
-module Lect03 where
+module L03Functions where
 
 -- lambda notation for anonymous functions
 

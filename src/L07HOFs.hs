@@ -1,4 +1,4 @@
-module Lect07 where
+module L07HOFs where
 import Prelude hiding (($), (.), flip, on, and,
                        map, filter, any, all, iterate, until,
                        foldr, foldl, foldr1, foldl1)

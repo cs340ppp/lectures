@@ -1,6 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Lect11 where
+module L11Monads where
 import Prelude hiding (fail)
 import Data.Char
 import Control.Applicative

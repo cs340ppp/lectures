@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, InstanceSigs #-}
 
-module Lect10 where
+module L10FAM where
 import Prelude hiding (Functor, fmap, (<$>),
                        Applicative, pure, (<*>),
                        Monad, (>>=), (>>), return)

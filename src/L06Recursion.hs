@@ -1,4 +1,4 @@
-module Lect06 where
+module L06Recursion where
 import Data.List (nub)
 import Debug.Trace
 import Data.Function.Memoize

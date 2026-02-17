@@ -1,11 +1,11 @@
-module Lect05Spec (spec) where
+module L05TestingSpec (spec) where
 
 import Test.Hspec
 import Test.HUnit
 import Test.HUnit.Approx
 import Test.QuickCheck
 import Control.Exception
-import Lect05 (c2k, c2f, f2c, mySum, quadRoots)
+import L05Testing (c2k, c2f, f2c, mySum, quadRoots)
 import Test.Hspec.QuickCheck (prop)
 
 

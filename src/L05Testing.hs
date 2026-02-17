@@ -1,4 +1,4 @@
-module Lect05 where
+module L05Testing where
 
 c2k :: (Ord a, Floating a) => a -> a
 c2k c | c >= 0 = c + 273.15

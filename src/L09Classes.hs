@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, InstanceSigs #-}
 
-module Lect09 where
+module L09Classes where
 import Data.Char
 
 -- Our first type class

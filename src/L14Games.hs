@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Lect14 where
+module L14Games where
 import Prelude hiding (lines)
 import Data.Maybe
 import Data.Ord

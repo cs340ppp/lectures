@@ -1,4 +1,4 @@
-module Lect04 where
+module L04Lists where
 import Prelude hiding (null, head, tail, length, product, enumFromTo,
                        map, filter, zip, (++), reverse, repeat,
                        enumFrom, take, drop)
