@@ -1,59 +1,73 @@
 module L06Recursion where
-import Data.List (nub)
-import Debug.Trace
-import Data.Function.Memoize
+import Prelude hiding (gcd, sqrt)
 
--- sum up the elements of a list
-sum' :: Num a => [a] -> a
-sum' = undefined
-
--- a classic!
 factorial :: Integer -> Integer
-factorial = undefined
+factorial 0 = 1
+factorial n = n * factorial (n-1)
 
--- sum only the positive numbers in a list
-sumPositives :: Integral a => [a] -> a
-sumPositives = undefined
+digits :: Int -> [Int]
+digits n
+  | n < 10    = [n]
+  | otherwise = digits (n `div` 10)
+                ++ [n `mod` 10]
 
--- palindroms are strings that read the same forwards as backwards
-palindromes :: [String] -> [String]
-palindromes = undefined
+digits' :: Int -> [Int]
+digits' 0 = [0]
+digits' n = aux n []
+  where aux 0 acc = acc
+        aux n acc = aux (n `div` 10)
+                        (n `mod` 10 : acc)
 
--- reverse a list
-reverse' :: [a] -> [a]
-reverse' = undefined
-
--- generate all combinations of elements in a list (order doesn't matter)
 combinations :: [a] -> [[a]]
-combinations = undefined
+combinations [] = [[]]
+combinations (x:xs) = combinations xs
+                      ++ map (x:) (combinations xs)
 
--- knapsack problem: given a list of items (value,weight) and a weight 
---                   capacity, find the maximum value that can be carried
--- e.g., knapsack 10 [(60,6), (90,8), (50,2), (40,2)] = 150
 knapsack :: (Ord a, Num a) => a -> [(a,a)] -> a
-knapsack = undefined
+knapsack _ [] = 0
+knapsack cap ((v,w):items)
+  | w > cap   = knapsack cap items
+  | otherwise = max (knapsack cap items)
+                    (v + knapsack (cap-w) items)
 
--- generate all permutations of elements in a list (order matters)
-permutations :: [a] -> [[a]]
-permutations = undefined
+permutations :: Eq a => [a] -> [[a]]
+permutations [] = [[]]
+permutations xs = [x:ps | x <- xs,
+                          ps <- permutations (delete x xs)]
+  where delete y [] = []
+        delete y (z:zs) | y == z    = zs
+                        | otherwise = z : delete y zs
 
--- generate all palindromes from a given string (use `nub` to remove dups)
-allPalindromes :: String -> [String]
-allPalindromes = undefined
-
--- another classic!
 fib :: Int -> Integer
-fib = undefined
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
 
--- sort by splitting the list in half and merging the sorted halves
+fibMemo :: Int -> Integer
+fibMemo n = memo !! n
+  where memo = map fib [0..]
+        fib 0 = 0
+        fib 1 = 1
+        fib k = memo !! (k-1) + memo !! (k-2)
+
 mergesort :: Ord a => [a] -> [a]
-mergesort = undefined
+mergesort [] = []
+mergesort [x] = [x]
+mergesort xs = merge (mergesort left) (mergesort right)
+  where (left, right) = splitAt (length xs `div` 2) xs
+        merge [] ys = ys
+        merge xs [] = xs
+        merge (x:xs) (y:ys)
+          | x <= y    = x : merge xs (y:ys)
+          | otherwise = y : merge (x:xs) ys
 
--- Newton's method for finding square roots
--- 1. Start with a guess g -- for sqrt x, try g=x/2
--- 2. Is g^2 = x?
---    - if so, we're done
--- 3. Improve the guess; g'=(g + x/g)/2
---    (if g is too low this will increase it, and vice versa)
-sqrt' :: Double -> Double
-sqrt' = undefined
+gcd :: Integer -> Integer -> Integer
+gcd a 0 = a
+gcd a b = gcd b (a `mod` b)
+
+sqrt :: Double -> Double
+sqrt x = improve (x/2)
+  where improve g
+          | abs (g*g - x) < 0.0001 = g
+          | otherwise = improve ((g + x/g) / 2)
+
