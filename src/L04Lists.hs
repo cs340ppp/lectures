@@ -106,9 +106,9 @@ reverse' [] acc = acc
 
 -- hiding the accumulator with a helper function
 reverse'' :: [a] -> [a]
-reverse'' lst = aux lst []
-  where aux (x:xs) acc = aux xs (x:acc)
-        aux [] acc = acc
+reverse'' lst = go lst []
+  where go [] acc     = acc
+        go (x:xs) acc = go xs (x:acc)
 
 -- infinite list generators
 

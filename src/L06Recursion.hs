@@ -13,10 +13,10 @@ digits n
 
 digits' :: Int -> [Int]
 digits' 0 = [0]
-digits' n = aux n []
-  where aux 0 acc = acc
-        aux n acc = aux (n `div` 10)
-                        (n `mod` 10 : acc)
+digits' n = go [] n
+  where go acc 0 = acc
+        go acc n = go (n `mod` 10 : acc)
+                      (n `div` 10)
 
 combinations :: [a] -> [[a]]
 combinations [] = [[]]
