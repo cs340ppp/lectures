@@ -1,7 +1,8 @@
 module L07HOFs where
-import Prelude hiding (($), (.), const, flip, on, even,
-                       iterate, until,
-                       foldr, foldl, foldr1, foldl1)
+import Prelude hiding (($), (.), const, flip, on, even, until,
+                       foldr, foldl, foldl')
+import Data.Bits (xor)
+import Data.Char (ord)
 import Data.Function.Memoize
 
 -- Combinators
@@ -56,3 +57,49 @@ add = fix (\rec m n -> if m == 0 then n else rec (m-1) (n+1))
 fib :: Integer -> Integer
 fib = memoFix (\rec n -> if n == 0 || n == 1 then n
                          else rec (n-1) + rec (n-2))
+
+until :: (a -> Bool) -> (a -> a) -> a -> a
+until p f = go
+  where go x | p x       = x
+             | otherwise = go (f x)
+              
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr _ z [] = z
+foldr f z (x:xs) = f x (foldr f z xs)
+
+sum' :: Num a => [a] -> a
+sum' = foldr (+) 0
+
+and' :: [Bool] -> Bool
+and' = foldr (&&) True
+
+(+++) :: [a] -> [a] -> [a]
+l1 +++ l2 = foldr (:) l2 l1
+
+length' :: [a] -> Int
+length' = foldr (\_ n -> n+1) 0
+
+map' :: (a -> b) -> [a] -> [b]
+map' f = foldr (\x xs -> f x : xs) []
+
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' p = foldr (\x xs -> if p x then x:xs else xs) []
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl _ acc [] = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldl' :: (b -> a -> b) -> b -> [a] -> b
+foldl' _ acc [] = acc
+foldl' f acc (x:xs) = let acc' = f acc x
+                      in acc' `seq` foldl' f acc' xs
+
+reverse' :: [a] -> [a]
+reverse' = foldl' (flip (:)) []
+
+sequenceOps :: Num a => a -> [a -> a] -> a
+sequenceOps init = foldl' (\x op -> op x) init
+
+hash :: String -> Integer
+hash = foldl' h 0
+  where h v c = (7*v `xor` fromIntegral (ord c)) `mod` 1000007
